@@ -72,7 +72,7 @@
             z-index: 10;
             width: 150px;
             min-height: 200px;
-            overflow: hidden; /* Добавили чтобы содержимое не выходило за границы */
+            overflow: hidden;
         }
         .storage-item.dragging {
             transform: scale(1.05);
@@ -208,12 +208,12 @@
         
         .slots-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(55px, 1fr)); /* Уменьшили до 55px */
-            gap: 4px; /* Уменьшили отступ */
+            grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+            gap: 4px; 
             margin-top: 8px;
         }
         .slot { 
-            height: 65px; /* Уменьшили до 65px */
+            height: 65px; 
             border: 2px dashed #ddd; 
             border-radius: 6px; 
             display: flex; 
@@ -223,11 +223,11 @@
             position: relative; 
             background: #f8f9fa; 
             transition: all 0.3s;
-            overflow: hidden; /* Важно: не даем содержимому выходить за границы */
-            padding: 0; /* Убрали padding */
+            overflow: hidden;
+            padding: 0;
         }
         .slot.empty:hover { border-color: #3498db; background: #e3f2fd; }
-        .slot.empty::after { content: '+'; font-size: 18px; color: #ddd; } /* Уменьшили размер плюса */
+        .slot.empty::after { content: '+'; font-size: 18px; color: #ddd; }
         .slot.drag-over { background: #d5f4e6; border-color: #27ae60; border-style: solid; }
         
         .cylinder { 
@@ -235,16 +235,16 @@
             height: 100%; 
             background: white; 
             border-radius: 6px; 
-            padding: 3px; /* Уменьшили padding */
+            padding: 3px; 
             border-left: 4px solid; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1); /* Уменьшили тень */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
             cursor: grab; 
             user-select: none; 
             overflow: hidden;
-            font-size: 9px; /* Уменьшили размер шрифта */
+            font-size: 9px;
             display: flex;
             flex-direction: column;
-            box-sizing: border-box; /* Важно: включает padding в ширину */
+            box-sizing: border-box;
         }
         .cylinder:active { cursor: grabbing; }
         .cylinder.dragging { opacity: 0.7; transform: scale(1.05); box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
@@ -262,7 +262,7 @@
             justify-content: space-between; 
             align-items: center; 
             margin-bottom: 2px;
-            min-height: 14px; /* Фиксированная высота */
+            min-height: 14px;
         }
         .cylinder-number { 
             font-weight: bold; 
@@ -293,7 +293,7 @@
             font-size: 7px; 
             color: #888; 
             line-height: 1.1;
-            margin-top: auto; /* Прижимаем к низу */
+            margin-top: auto;
         }
         .cylinder-actions { 
             display: flex; 
@@ -448,7 +448,6 @@
             border-color: #3498db;
         }
         
-        /* Новые стили для улучшения отображения */
         .storage-info {
             font-size: 10px;
             color: #666;
@@ -484,7 +483,6 @@
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-    <!-- HTML код остается таким же как в предыдущем ответе -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <h2>Вход в систему</h2>
@@ -696,7 +694,7 @@
             
             <div class="form-group">
                 <label>Место хранения:</label>
-                <input type="text" id="viewStorageLocation" readonly>
+                    <input type="text" id="viewStorageLocation" readonly>
             </div>
             
             <div class="form-group">
@@ -1055,7 +1053,7 @@
                 auth.onAuthStateChanged(async (user) => {
                     if (user) {
                         this.currentUser = user;
-                        await this.loadUserRole();
+                        await this.loadUserData();
                         this.showApp();
                         await this.setUserActive(true);
                         this.setupRealtimeListeners();
@@ -1069,7 +1067,12 @@
                 this.setupEventListeners();
             },
 
-            // ========== СИСТЕМА РАССТАНОВКИ ==========
+            async loadUserData() {
+                await this.loadUserRole();
+                await this.loadStoragePositions();
+            },
+
+            // ========== СИСТЕМА РАССТАНОВКИ (ИСПРАВЛЕННАЯ) ==========
             toggleLayoutMode() {
                 this.isLayoutMode = !this.isLayoutMode;
                 const workspace = document.getElementById('workspace');
@@ -1084,9 +1087,8 @@
                     layoutBadge.style.display = 'block';
                     layoutStatus.textContent = 'Режим расстановки включен';
                     this.showNotification('Режим расстановки включен. Перетаскивайте хранилища.', 'info');
-                    this.loadStoragePositions();
+                    this.applyStoragePositions();
                     
-                    // Включаем скролл в режиме расстановки
                     workspace.style.overflow = 'auto';
                 } else {
                     workspace.classList.remove('layout-mode');
@@ -1095,30 +1097,30 @@
                     layoutStatus.textContent = 'Режим просмотра';
                     this.showNotification('Режим расстановки выключен', 'info');
                     
-                    // Отключаем скролл в обычном режиме
                     workspace.style.overflow = 'hidden';
-                    
-                    // Сбрасываем размер рабочей области
                     workspace.style.minWidth = '100%';
                     workspace.style.minHeight = '800px';
                 }
             },
 
-            loadStoragePositions() {
-                const savedPositions = localStorage.getItem('storagePositions');
-                if (savedPositions) {
-                    try {
-                        this.storagePositions = JSON.parse(savedPositions);
-                        console.log('Загружено позиций:', Object.keys(this.storagePositions).length);
-                    } catch (e) {
-                        console.error('Ошибка загрузки позиций:', e);
+            async loadStoragePositions() {
+                if (!this.currentUser) return;
+                
+                try {
+                    const layoutDoc = await db.collection('storageLayout').doc(this.currentUser.uid).get();
+                    
+                    if (layoutDoc.exists) {
+                        this.storagePositions = layoutDoc.data().positions || {};
+                        console.log('Загружено позиций из Firebase:', Object.keys(this.storagePositions).length);
+                    } else {
                         this.storagePositions = {};
+                        console.log('Позиции не найдены, создаем новые');
                     }
-                } else {
+                    
+                } catch (e) {
+                    console.error('Ошибка загрузки позиций:', e);
                     this.storagePositions = {};
                 }
-                
-                this.applyStoragePositions();
             },
 
             applyStoragePositions() {
@@ -1132,36 +1134,15 @@
                     if (position && this.isLayoutMode) {
                         console.log('Применяем позицию для', storageId, position);
                         
-                        // Устанавливаем абсолютное позиционирование
                         storageElement.style.position = 'absolute';
                         storageElement.style.left = `${position.x}px`;
                         storageElement.style.top = `${position.y}px`;
                         storageElement.style.zIndex = '10';
-                    } else if (this.isLayoutMode) {
-                        // Если позиции нет, устанавливаем случайную
-                        const workspace = document.getElementById('workspace');
-                        const workspaceWidth = workspace.clientWidth;
-                        const workspaceHeight = workspace.clientHeight;
-                        
-                        const randomX = Math.floor(Math.random() * Math.max(100, workspaceWidth - 150));
-                        const randomY = Math.floor(Math.random() * Math.max(100, workspaceHeight - 200));
-                        
+                    } else if (this.isLayoutMode && !position) {
                         storageElement.style.position = 'absolute';
-                        storageElement.style.left = `${randomX}px`;
-                        storageElement.style.top = `${randomY}px`;
+                        storageElement.style.left = '0px';
+                        storageElement.style.top = '0px';
                         storageElement.style.zIndex = '10';
-                        
-                        // Сохраняем позицию
-                        this.storagePositions[storageId] = {
-                            x: randomX,
-                            y: randomY
-                        };
-                    } else {
-                        // В режиме просмотра возвращаем в поток
-                        storageElement.style.position = '';
-                        storageElement.style.left = '';
-                        storageElement.style.top = '';
-                        storageElement.style.zIndex = '';
                     }
                 });
             },
@@ -1176,30 +1157,26 @@
                     storageElements.forEach(storageElement => {
                         const storageId = storageElement.dataset.storageId;
                         
+                        const x = parseInt(storageElement.style.left) || 0;
+                        const y = parseInt(storageElement.style.top) || 0;
+                        
                         positions[storageId] = {
-                            x: parseInt(storageElement.style.left) || 0,
-                            y: parseInt(storageElement.style.top) || 0,
-                            savedAt: new Date().toISOString(),
-                            savedBy: this.currentUser.email
+                            x: x,
+                            y: y,
+                            updatedAt: new Date().toISOString()
                         };
                     });
                     
-                    localStorage.setItem('storagePositions', JSON.stringify(positions));
                     this.storagePositions = positions;
                     
-                    // Сохраняем в Firebase если пользователь админ
-                    if (this.userRole === 'admin') {
-                        await db.collection('storageLayout').doc('current').set({
-                            positions: positions,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedBy: this.currentUser.email
-                        }, { merge: true });
-                        
-                        this.showNotification('Позиции сохранены для всех пользователей', 'success');
-                    } else {
-                        this.showNotification('Позиции сохранены локально', 'success');
-                    }
+                    await db.collection('storageLayout').doc(this.currentUser.uid).set({
+                        positions: positions,
+                        userId: this.currentUser.uid,
+                        userEmail: this.currentUser.email,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
                     
+                    this.showNotification('Позиции сохранены', 'success');
                     this.lastSaveTime = new Date();
                     
                 } catch (error) {
@@ -1211,29 +1188,33 @@
             resetStoragePositions() {
                 if (!confirm('Сбросить все позиции хранилищ? Все хранилища вернутся в исходное положение.')) return;
                 
-                localStorage.removeItem('storagePositions');
-                this.storagePositions = {};
-                
-                const storageElements = document.querySelectorAll('.storage-item');
-                storageElements.forEach(storageElement => {
-                    storageElement.style.position = '';
-                    storageElement.style.left = '';
-                    storageElement.style.top = '';
-                });
-                
-                // Сбрасываем размер рабочей области
-                const workspace = document.getElementById('workspace');
-                workspace.style.minWidth = '100%';
-                workspace.style.minHeight = '800px';
-                
-                this.showNotification('Позиции сброшены', 'info');
+                try {
+                    db.collection('storageLayout').doc(this.currentUser.uid).delete();
+                    
+                    this.storagePositions = {};
+                    
+                    const storageElements = document.querySelectorAll('.storage-item');
+                    storageElements.forEach(storageElement => {
+                        storageElement.style.position = '';
+                        storageElement.style.left = '';
+                        storageElement.style.top = '';
+                        storageElement.style.zIndex = '';
+                    });
+                    
+                    const workspace = document.getElementById('workspace');
+                    workspace.style.minWidth = '100%';
+                    workspace.style.minHeight = '800px';
+                    
+                    this.showNotification('Позиции сброшены', 'info');
+                    
+                } catch (error) {
+                    console.error('Ошибка сброса позиций:', error);
+                    this.showNotification('Ошибка сброса позиций', 'error');
+                }
             },
 
             setupStorageDrag(storageElement, storageId) {
                 const header = storageElement.querySelector('.storage-header');
-                const storage = this.storage.find(s => s.id === storageId);
-                
-                if (!storage) return;
                 
                 let isDragging = false;
                 let startX, startY, startLeft, startTop;
@@ -1285,7 +1266,6 @@
                     let newLeft = startLeft + deltaX;
                     let newTop = startTop + deltaY;
                     
-                    // Ограничиваем область перемещения
                     const workspace = document.getElementById('workspace');
                     newLeft = Math.max(0, newLeft);
                     newTop = Math.max(0, newTop);
@@ -1307,7 +1287,6 @@
                     document.removeEventListener('mouseup', stopDrag);
                     document.removeEventListener('touchend', stopDrag);
                     
-                    // Автосохранение позиции
                     this.saveStoragePositions();
                 };
                 
@@ -1327,6 +1306,37 @@
                         startDrag(e);
                     }
                 }, { passive: false });
+            },
+
+            moveStorage(storageId, direction) {
+                if (!this.isLayoutMode) return;
+                
+                const storageElement = document.querySelector(`.storage-item[data-storage-id="${storageId}"]`);
+                if (!storageElement) return;
+                
+                const step = 10;
+                let left = parseInt(storageElement.style.left) || 0;
+                let top = parseInt(storageElement.style.top) || 0;
+                
+                switch(direction) {
+                    case 'up':
+                        top = Math.max(0, top - step);
+                        break;
+                    case 'down':
+                        top += step;
+                        break;
+                    case 'left':
+                        left = Math.max(0, left - step);
+                        break;
+                    case 'right':
+                        left += step;
+                        break;
+                }
+                
+                storageElement.style.left = `${left}px`;
+                storageElement.style.top = `${top}px`;
+                
+                this.saveStoragePositions();
             },
 
             // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
@@ -1557,6 +1567,24 @@
                 
                 this.realtimeListeners.push(usersListener);
                 
+                const layoutListener = db.collection('storageLayout').doc(this.currentUser.uid)
+                    .onSnapshot((doc) => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            this.storagePositions = data.positions || {};
+                            
+                            if (this.isLayoutMode) {
+                                this.applyStoragePositions();
+                            }
+                            
+                            console.log('Позиции обновлены из Firebase');
+                        }
+                    }, (error) => {
+                        console.error('Ошибка слушателя позиций:', error);
+                    });
+                
+                this.realtimeListeners.push(layoutListener);
+                
                 this.keepAliveInterval = setInterval(() => {
                     if (this.currentUser) {
                         this.setUserActive(true);
@@ -1572,6 +1600,34 @@
                 
                 if (this.keepAliveInterval) {
                     clearInterval(this.keepAliveInterval);
+                }
+            },
+
+            async migrateLocalPositions() {
+                if (!this.currentUser) return;
+                
+                const localPositions = localStorage.getItem('storagePositions');
+                if (localPositions) {
+                    try {
+                        const positions = JSON.parse(localPositions);
+                        
+                        const layoutDoc = await db.collection('storageLayout').doc(this.currentUser.uid).get();
+                        
+                        if (!layoutDoc.exists || Object.keys(layoutDoc.data().positions || {}).length === 0) {
+                            await db.collection('storageLayout').doc(this.currentUser.uid).set({
+                                positions: positions,
+                                userId: this.currentUser.uid,
+                                userEmail: this.currentUser.email,
+                                migratedFromLocal: true,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            console.log('Позиции перенесены из локального хранилища');
+                            localStorage.removeItem('storagePositions');
+                        }
+                    } catch (e) {
+                        console.error('Ошибка переноса позиций:', e);
+                    }
                 }
             },
 
@@ -1628,14 +1684,12 @@
             filterStorage(type) {
                 this.currentFilter = type;
                 
-                // Обновляем активные кнопки фильтров
                 document.querySelectorAll('.filter-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
                 
                 event.target.classList.add('active');
                 
-                // Показываем/скрываем хранилища
                 const storageElements = document.querySelectorAll('.storage-item');
                 storageElements.forEach(element => {
                     const storageId = element.dataset.storageId;
@@ -1682,6 +1736,9 @@
                     }
                     
                     await this.loadUserRole();
+                    
+                    await this.migrateLocalPositions();
+                    
                     this.showApp();
                     
                     await this.setUserActive(true);
@@ -1910,7 +1967,6 @@
                 
                 this.renderFreeCylinders();
                 
-                // Применяем фильтр
                 this.filterStorage(this.currentFilter);
             },
 
@@ -1919,7 +1975,6 @@
                 div.className = `storage-item ${storage.type === 'Шкаф' ? 'closet' : storage.type === 'Склад' ? 'rack' : storage.type === 'Кабинет' ? 'room' : 'other'}`;
                 div.dataset.storageId = storage.id;
                 
-                // Устанавливаем базовые стили
                 div.style.position = this.isLayoutMode ? 'absolute' : 'relative';
                 
                 const cylindersInStorage = this.cylinders.filter(c => c.storageId === storage.id);
@@ -1965,7 +2020,6 @@
                 
                 const slotsContainer = div.querySelector(`#slots-${storage.id}`);
                 if (slotsContainer) {
-                    // Рассчитываем количество колонок в зависимости от вместимости
                     const columns = Math.min(3, Math.ceil(Math.sqrt(storage.capacity)));
                     slotsContainer.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
                     
@@ -2225,38 +2279,6 @@
                 await this.moveCylinderToSlot(cylinderId, storageId, position);
                 const modal = document.querySelector('.modal');
                 if (modal) modal.remove();
-            },
-
-            moveStorage(storageId, direction) {
-                if (!this.isLayoutMode) return;
-                
-                const storageElement = document.querySelector(`.storage-item[data-storage-id="${storageId}"]`);
-                if (!storageElement) return;
-                
-                const step = 10;
-                let left = parseInt(storageElement.style.left) || 0;
-                let top = parseInt(storageElement.style.top) || 0;
-                
-                switch(direction) {
-                    case 'up':
-                        top = Math.max(0, top - step);
-                        break;
-                    case 'down':
-                        top += step;
-                        break;
-                    case 'left':
-                        left = Math.max(0, left - step);
-                        break;
-                    case 'right':
-                        left += step;
-                        break;
-                }
-                
-                storageElement.style.left = `${left}px`;
-                storageElement.style.top = `${top}px`;
-                
-                // Автосохранение
-                this.saveStoragePositions();
             },
 
             renderFreeCylinders() {
@@ -2592,7 +2614,7 @@
                 let csvContent = "data:text/csv;charset=utf-8,";
                 csvContent += "Номер,Тип газа,Статус,Дата поставки,Дата изготовления,Следующее освидетельствование,Рабочее давление,Давление испытаний,Вместимость,Поставщик,Место хранения,Примечание\n";
                 
-                                this.cylinders.forEach(cylinder => {
+                this.cylinders.forEach(cylinder => {
                     const row = [
                         `"${cylinder.number}"`,
                         `"${cylinder.gasType}"`,
@@ -3291,12 +3313,10 @@
             }
         };
 
-        // Инициализация приложения при загрузке
         window.addEventListener('DOMContentLoaded', () => {
             App.init();
         });
 
-        // Экспорт в глобальную область видимости
         window.App = App;
     </script>
 </body>
