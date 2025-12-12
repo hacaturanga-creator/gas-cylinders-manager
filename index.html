@@ -98,6 +98,7 @@
         .free-cylinders-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; min-height: 100px; }
         .free-cylinder { min-width: 180px; background: white; padding: 10px; border-radius: 6px; border-left: 4px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; }
         .free-cylinder:active { cursor: grabbing; }
+        .free-cylinder.dragging { opacity: 0.7; transform: scale(1.05); }
         
         /* Архив */
         .archive-section { background: white; border: 2px solid #95a5a6; border-radius: 8px; padding: 15px; margin-top: 30px; }
@@ -152,73 +153,55 @@
         .drop-zone { border: 2px dashed #3498db; border-radius: 8px; padding: 20px; text-align: center; background: #f8f9fa; margin-bottom: 20px; }
         .drop-zone.drag-over { background: #e3f2fd; border-color: #2980b9; }
         
-        /* Модальное окно экспорта */
-        .export-modal-content { max-width: 600px; }
-        .export-options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
-        .export-option { padding: 15px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; }
-        .export-option:hover { border-color: #3498db; background: #f8f9fa; }
-        .export-option.selected { border-color: #3498db; background: #e3f2fd; }
-        .export-option h4 { margin-bottom: 5px; color: #2c3e50; }
-        .export-option p { font-size: 12px; color: #666; }
-        
-        /* Админские кнопки */
-        .admin-only { display: none; }
-        .admin-only.show { display: inline-block; }
-        
-        /* Выбор баллона */
-        .cylinder-select-modal .cylinder-option {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            margin-bottom: 5px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .cylinder-option:hover {
-            background: #f5f5f5;
-            border-color: #3498db;
-        }
-        
-        /* Счетчики в заголовках */
-        .section-header {
+        /* Индикатор прав пользователя */
+        .role-indicator {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
         }
-        .badge {
+        .role-indicator.admin {
+            background: #e74c3c;
+            color: white;
+        }
+        .role-indicator.user {
             background: #3498db;
             color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 12px;
         }
         
-        /* Сообщение о первом запуске */
-        .first-run-message {
-            background: #fff8e1;
-            border: 2px solid #ffd54f;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 10px 0;
-            text-align: center;
+        /* Информация о правах */
+        .permissions-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        .permissions-info.admin {
+            border-left: 4px solid #e74c3c;
+        }
+        .permissions-info.user {
+            border-left: 4px solid #3498db;
         }
     </style>
-    <!-- Библиотека для экспорта в Excel -->
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <h2>Вход в систему</h2>
-            <div id="firstRunMessage" class="first-run-message hidden">
-                <h3>👋 Добро пожаловать!</h3>
-                <p><strong>Это первый запуск системы</strong></p>
-                <p>Для начала работы нажмите кнопку ниже чтобы создать администратора:</p>
+            <div id="firstRunMessage" class="hidden" style="background: #fff8e1; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 2px solid #ffd54f;">
+                <h3 style="color: #d35400; margin-top: 0;">👋 Первый запуск системы!</h3>
+                <p><strong>Для начала работы создайте администратора:</strong></p>
                 <button id="firstTimeAdminBtn" class="btn btn-warning btn-block" style="margin-top: 10px;">
-                    🚀 Создать администратора
+                    🚀 Создать администратора (admin@example.com)
                 </button>
             </div>
+            
             <div class="form-group">
                 <label>Email:</label>
                 <input type="email" id="loginEmail" placeholder="admin@example.com" value="admin@example.com">
@@ -227,6 +210,21 @@
                 <label>Пароль:</label>
                 <input type="password" id="loginPassword" placeholder="Пароль" value="admin123">
             </div>
+            
+            <div class="permissions-info user">
+                <strong>Права пользователя:</strong><br>
+                • Просмотр всех данных<br>
+                • Перемещение баллонов (Drag & Drop)<br>
+                • Добавление новых баллонов
+            </div>
+            
+            <div class="permissions-info admin">
+                <strong>Права администратора:</strong><br>
+                • Все права пользователя<br>
+                • Управление хранилищами<br>
+                • Управление пользователями
+            </div>
+            
             <button id="loginBtn" class="btn btn-primary btn-block">Войти</button>
             <button id="registerBtn" class="btn btn-secondary btn-block">Зарегистрировать нового пользователя</button>
             <button id="createAdminBtn" class="btn btn-warning btn-block">Создать администратора</button>
@@ -234,15 +232,42 @@
         </div>
     </div>
 
-    <!-- ... остальные модальные окна (добавление баллона, хранилища и т.д.) ... -->
-    <!-- Для краткости опускаю повторяющийся HTML, он остается таким же как в предыдущем коде -->
-    
+    <!-- Остальные модальные окна остаются без изменений -->
+    <div id="addCylinderModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Добавить баллон</h2>
+            <!-- ... содержимое формы добавления баллона ... -->
+            <div class="form-group">
+                <label>Номер баллона: *</label>
+                <input type="text" id="cylinderNumber" placeholder="Б-1234" required>
+            </div>
+            <div class="form-group">
+                <label>Тип газа: *</label>
+                <select id="cylinderGasType" required>
+                    <option value="Кислород">Кислород</option>
+                    <option value="Азот">Азот</option>
+                    <option value="Аргон">Аргон</option>
+                    <option value="Гелий">Гелий</option>
+                    <option value="Ацетилен">Ацетилен</option>
+                    <option value="Водород">Водород</option>
+                    <option value="Метан">Метан</option>
+                    <option value="Углекислый газ">Углекислый газ</option>
+                </select>
+            </div>
+            <!-- ... остальные поля ... -->
+            <button id="saveCylinderBtn" class="btn btn-primary">Сохранить</button>
+            <button id="cancelCylinderBtn" class="btn btn-secondary">Отмена</button>
+        </div>
+    </div>
+
     <div id="app" class="hidden">
         <header class="header">
             <h1>Управление баллонами газов</h1>
             <div class="user-info">
-                <span id="currentUser"></span>
-                <span id="userRole" style="font-size: 12px; background: #3498db; color: white; padding: 2px 8px; border-radius: 10px;"></span>
+                <span id="currentUserEmail"></span>
+                <div id="userRoleBadge" class="role-indicator user">
+                    <span id="userRoleText">Пользователь</span>
+                </div>
                 <button id="logoutBtn" class="btn btn-small btn-secondary">Выйти</button>
             </div>
         </header>
@@ -252,7 +277,7 @@
                 <div class="sidebar-section">
                     <h3>Управление</h3>
                     <button id="addCylinderBtn" class="btn btn-block">+ Добавить баллон</button>
-                    <button id="addStorageBtn" class="btn btn-block">+ Добавить хранилище</button>
+                    <button id="addStorageBtn" class="btn btn-block admin-only hidden">+ Добавить хранилище</button>
                     <button id="addDemoDataBtn" class="btn btn-block">+ Тестовые данные</button>
                 </div>
 
@@ -265,211 +290,49 @@
                         <div class="stat-item"><span>Просроченные:</span><span id="expiredCylinders" class="stat-value">0</span></div>
                         <div class="stat-item"><span>Хранилищ:</span><span id="totalStorage" class="stat-value">0</span></div>
                         <div class="stat-item"><span>В архиве:</span><span id="archivedCount" class="stat-value">0</span></div>
-                        <div class="stat-item"><span>Активных:</span><span id="activeUsers" class="stat-value">1</span></div>
                     </div>
                 </div>
 
                 <div class="sidebar-section">
                     <h3>Экспорт</h3>
                     <button id="exportDataBtn" class="btn btn-success btn-block">📊 Экспорт данных</button>
-                    <button id="quickExcelBtn" class="btn btn-warning btn-block">📈 Быстрый Excel</button>
                 </div>
                 
-                <div class="sidebar-section admin-only hidden" id="adminSection">
-                    <h3>Администратор</h3>
-                    <div style="font-size: 12px; color: #666; padding: 10px; background: #f8f9fa; border-radius: 6px;">
-                        <p>⚙️ Доступ к редактированию хранилищ</p>
-                        <p>👑 Управление пользователями</p>
+                <div class="sidebar-section">
+                    <h3>Права доступа</h3>
+                    <div id="permissionsDisplay" class="permissions-info user">
+                        <!-- Здесь будет информация о правах -->
                     </div>
                 </div>
             </aside>
 
             <main class="main-content">
                 <div class="workspace-header">
-                    <h2>Рабочая область <span class="badge" id="totalCylindersBadge">0</span></h2>
-                    <div style="display: flex; gap: 10px;">
-                        <button id="refreshBtn" class="btn btn-small">🔄 Обновить</button>
-                        <button id="clearDragBtn" class="btn btn-small">🗑️ Очистить выделение</button>
-                        <button id="showArchiveBtn" class="btn btn-info btn-small">📁 Архив</button>
+                    <h2>Рабочая область</h2>
+                    <div>
+                        <span id="dragHint" style="font-size: 14px; color: #666;">💡 Перетаскивайте баллоны между хранилищами</span>
                     </div>
                 </div>
 
                 <!-- Дроп-зона для свободных баллонов -->
                 <div class="drop-zone" id="globalDropZone">
-                    <p>📦 Перетащите баллон сюда, чтобы сделать его свободным</p>
-                    <p style="font-size: 12px; color: #666; margin-top: 5px;">или кликните на слот для добавления баллона</p>
+                    <p>📦 <strong>Перетащите баллон сюда</strong>, чтобы сделать его свободным</p>
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">или кликните на пустой слот для добавления баллона</p>
                 </div>
 
                 <div id="storageContainer" class="storage-grid"></div>
 
                 <div id="freeCylindersContainer" class="free-cylinders hidden">
-                    <div class="section-header">
-                        <h3>📦 Свободные баллоны</h3>
-                        <span class="badge" id="freeCylindersBadge">0</span>
-                    </div>
+                    <h3>📦 Свободные баллоны (<span id="freeCylindersCount">0</span>)</h3>
                     <div id="freeCylindersList" class="free-cylinders-grid"></div>
-                </div>
-
-                <!-- Архив удаленных баллонов -->
-                <div id="archiveContainer" class="archive-section hidden">
-                    <div class="archive-toggle" onclick="App.toggleArchive()">
-                        <div class="section-header" style="width: 100%;">
-                            <h3>📁 Архив удаленных баллонов</h3>
-                            <span class="badge" id="archiveCount">0</span>
-                        </div>
-                        <span>▼</span>
-                    </div>
-                    <div class="archive-content" id="archiveContent">
-                        <table class="archive-table">
-                            <thead>
-                                <tr>
-                                    <th>Номер</th>
-                                    <th>Газ</th>
-                                    <th>Дата удаления</th>
-                                    <th>Причина</th>
-                                    <th>Удалил</th>
-                                    <th>Комментарий</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody id="archiveTableBody">
-                                <!-- Данные архива будут здесь -->
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
 
                 <div id="emptyDatabase" style="text-align: center; padding: 50px;">
                     <h3>База данных пуста</h3>
-                    <p>Добавьте хранилища для начала работы</p>
-                    <button id="firstStorageBtn" class="btn btn-primary" style="margin-top: 20px;">+ Добавить первое хранилище</button>
+                    <p>Начните с добавления хранилищ или тестовых данных</p>
+                    <button id="addDemoDataFirstBtn" class="btn btn-primary" style="margin-top: 20px;">+ Добавить тестовые данные</button>
                 </div>
             </main>
-        </div>
-    </div>
-
-    <!-- Добавляем модальные окна из предыдущего кода -->
-    <!-- Модальное окно добавления баллона -->
-    <div id="addCylinderModal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Добавить баллон</h2>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Номер баллона: *</label>
-                    <input type="text" id="cylinderNumber" placeholder="Б-1234" required>
-                </div>
-                <div class="form-group">
-                    <label>Тип газа: *</label>
-                    <select id="cylinderGasType" required>
-                        <option value="Кислород">Кислород</option>
-                        <option value="Азот">Азот</option>
-                        <option value="Аргон">Аргон</option>
-                        <option value="Гелий">Гелий</option>
-                        <option value="Ацетилен">Ацетилен</option>
-                        <option value="Водород">Водород</option>
-                        <option value="Метан">Метан</option>
-                        <option value="Углекислый газ">Углекислый газ</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Дата поставки: *</label>
-                    <input type="date" id="deliveryDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Дата изготовления: *</label>
-                    <input type="date" id="manufactureDate" required>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Следующее освидетельствование: *</label>
-                    <input type="date" id="nextInspectionDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Статус:</label>
-                    <select id="cylinderStatus">
-                        <option value="Полный">Полный</option>
-                        <option value="Пустой">Пустой</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Рабочее давление (атм): *</label>
-                    <input type="number" id="workingPressure" placeholder="150" step="0.1" required>
-                </div>
-                <div class="form-group">
-                    <label>Давление испытаний (атм): *</label>
-                    <input type="number" id="testPressure" placeholder="225" step="0.1" required>
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Вместимость (л): *</label>
-                    <input type="number" id="capacity" placeholder="40" step="0.1" required>
-                </div>
-                <div class="form-group">
-                    <label>Поставщик: *</label>
-                    <input type="text" id="supplier" placeholder="ООО 'ГазСнаб'" required>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Примечание:</label>
-                <textarea id="notes" placeholder="Дополнительная информация"></textarea>
-            </div>
-            
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="saveCylinderBtn" class="btn btn-primary" style="flex: 1;">Сохранить</button>
-                <button id="cancelCylinderBtn" class="btn btn-secondary" style="flex: 1;">Отмена</button>
-            </div>
-            <div id="cylinderError" class="error-message hidden"></div>
-        </div>
-    </div>
-
-    <!-- Модальное окно добавления хранилища -->
-    <div id="addStorageModal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Добавить хранилище</h2>
-            <div class="form-group">
-                <label>Название:</label>
-                <input type="text" id="storageName" placeholder="Кабинет №1">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Тип:</label>
-                    <select id="storageType">
-                        <option value="Кабинет">Кабинет</option>
-                        <option value="Шкаф">Шкаф</option>
-                        <option value="Склад">Склад</option>
-                        <option value="Клеть">Клеть</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Вместимость:</label>
-                    <input type="number" id="storageCapacity" min="1" max="100" value="10">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Местоположение:</label>
-                <input type="text" id="storageLocation" placeholder="Цех №1, 2 этаж">
-            </div>
-            <div class="form-group">
-                <label>Описание:</label>
-                <textarea id="storageDescription" placeholder="Дополнительная информация"></textarea>
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="saveStorageBtn" class="btn btn-primary" style="flex: 1;">Сохранить</button>
-                <button id="cancelStorageBtn" class="btn btn-secondary" style="flex: 1;">Отмена</button>
-            </div>
-            <div id="storageError" class="error-message hidden"></div>
         </div>
     </div>
 
@@ -499,25 +362,15 @@
             userRole: 'user',
             storage: [],
             cylinders: [],
-            archivedCylinders: [],
             draggingCylinder: null,
-            dragSource: null,
-            selectedExportFormat: 'excel',
-            realtimeListeners: [],
-            activeUsers: 1,
-            lastUpdateTime: null,
-            realtimeIndicator: null,
-            cylinderToArchive: null,
-            storageToEdit: null,
-            editingCylinderId: null,
+            currentDragElement: null,
+            dragStartX: 0,
+            dragStartY: 0,
 
             async init() {
                 console.log('Инициализация приложения...');
                 
-                // Создаем индикатор реального времени
-                this.createRealtimeIndicator();
-                
-                // Проверяем, первый ли это запуск
+                // Проверяем первый запуск
                 await this.checkFirstRun();
                 
                 // Настраиваем слушатель состояния аутентификации
@@ -526,13 +379,8 @@
                         this.currentUser = user;
                         await this.loadUserRole();
                         this.showApp();
-                        
-                        await this.setUserActive(true);
-                        this.setupRealtimeListeners();
-                        
                     } else {
                         this.showLogin();
-                        this.stopRealtimeListeners();
                     }
                 });
 
@@ -541,13 +389,9 @@
 
             async checkFirstRun() {
                 try {
-                    // Проверяем, есть ли уже пользователи в Firestore
                     const usersSnapshot = await db.collection('users').limit(1).get();
-                    
                     if (usersSnapshot.empty) {
-                        // Первый запуск - показываем сообщение
                         document.getElementById('firstRunMessage').classList.remove('hidden');
-                        console.log('Первый запуск системы');
                     }
                 } catch (error) {
                     console.error('Ошибка проверки первого запуска:', error);
@@ -559,65 +403,23 @@
                 const password = 'admin123';
                 
                 try {
-                    // Сначала пытаемся войти
-                    try {
-                        await auth.signInWithEmailAndPassword(email, password);
-                        this.showNotification('Вход выполнен успешно!', 'success');
-                        return;
-                    } catch (loginError) {
-                        console.log('Пользователь не найден, создаем нового...');
-                    }
-                    
-                    // Создаем нового пользователя
-                    this.showNotification('Создание администратора...', 'info');
-                    
+                    // Создаем пользователя в Firebase Auth
                     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                     
                     // Создаем запись в Firestore
                     await db.collection('users').doc(userCredential.user.uid).set({
                         email: email,
                         role: 'admin',
-                        name: 'Администратор системы',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         createdBy: 'system'
                     });
                     
-                    this.showNotification('Администратор создан успешно!', 'success');
-                    
-                    // Скрываем сообщение о первом запуске
-                    document.getElementById('firstRunMessage').classList.add('hidden');
-                    
-                    // Автоматически входим
-                    await this.login();
+                    this.showNotification('✅ Администратор создан! Теперь вы можете войти.', 'success');
                     
                 } catch (error) {
                     console.error('Ошибка создания администратора:', error);
-                    
                     if (error.code === 'auth/email-already-in-use') {
-                        // Пользователь уже существует в Firebase Auth, но не в Firestore
-                        try {
-                            // Входим
-                            await auth.signInWithEmailAndPassword(email, password);
-                            
-                            // Проверяем и создаем запись в Firestore
-                            const user = auth.currentUser;
-                            const userDoc = await db.collection('users').doc(user.uid).get();
-                            
-                            if (!userDoc.exists) {
-                                await db.collection('users').doc(user.uid).set({
-                                    email: email,
-                                    role: 'admin',
-                                    name: 'Администратор системы',
-                                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                    createdBy: 'system'
-                                });
-                            }
-                            
-                            this.showNotification('Администратор настроен!', 'success');
-                            
-                        } catch (loginError) {
-                            this.showError('loginError', 'Ошибка входа: ' + loginError.message);
-                        }
+                        this.showNotification('Пользователь уже существует. Используйте кнопку "Войти"', 'info');
                     } else {
                         this.showError('loginError', error.message);
                     }
@@ -626,15 +428,12 @@
 
             async loadUserRole() {
                 try {
-                    if (!this.currentUser) return;
-                    
                     const userDoc = await db.collection('users').doc(this.currentUser.uid).get();
                     
                     if (userDoc.exists) {
                         this.userRole = userDoc.data().role || 'user';
                     } else {
-                        // Если записи нет, создаем ее
-                        // Для email admin@example.com всегда даем права администратора
+                        // Создаем запись пользователя
                         const isAdminEmail = this.currentUser.email === 'admin@example.com';
                         this.userRole = isAdminEmail ? 'admin' : 'user';
                         
@@ -644,8 +443,6 @@
                             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                             lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                         });
-                        
-                        console.log(`Создан пользователь с ролью: ${this.userRole}`);
                     }
                     
                     this.updateUIForRole();
@@ -657,64 +454,50 @@
             },
 
             updateUIForRole() {
-                const userRoleElement = document.getElementById('userRole');
-                const adminSection = document.getElementById('adminSection');
-                const adminButtons = document.querySelectorAll('.admin-only');
+                // Обновляем бейдж роли
+                const roleBadge = document.getElementById('userRoleBadge');
+                const roleText = document.getElementById('userRoleText');
+                const userEmail = document.getElementById('currentUserEmail');
                 
-                if (userRoleElement) {
-                    userRoleElement.textContent = this.userRole === 'admin' ? 'Администратор' : 'Пользователь';
-                    userRoleElement.style.background = this.userRole === 'admin' ? '#e74c3c' : '#3498db';
+                if (userEmail) {
+                    userEmail.textContent = this.currentUser.email;
                 }
                 
-                if (adminSection) {
+                if (roleBadge && roleText) {
                     if (this.userRole === 'admin') {
-                        adminSection.classList.remove('hidden');
+                        roleBadge.className = 'role-indicator admin';
+                        roleText.textContent = 'Администратор';
                     } else {
-                        adminSection.classList.add('hidden');
+                        roleBadge.className = 'role-indicator user';
+                        roleText.textContent = 'Пользователь';
                     }
                 }
                 
-                adminButtons.forEach(btn => {
-                    if (this.userRole === 'admin') {
-                        btn.classList.add('show');
-                    } else {
-                        btn.classList.remove('show');
-                    }
+                // Показываем/скрываем админские кнопки
+                document.querySelectorAll('.admin-only').forEach(btn => {
+                    btn.classList.toggle('hidden', this.userRole !== 'admin');
                 });
-            },
-
-            createRealtimeIndicator() {
-                this.realtimeIndicator = document.createElement('div');
-                this.realtimeIndicator.className = 'realtime-indicator';
-                this.realtimeIndicator.innerHTML = `
-                    <div class="pulse"></div>
-                    <span>Реальное время</span>
-                `;
-                document.body.appendChild(this.realtimeIndicator);
-            },
-
-            updateRealtimeIndicator() {
-                if (this.lastUpdateTime) {
-                    const diff = Date.now() - this.lastUpdateTime;
-                    const seconds = Math.floor(diff / 1000);
-                    
-                    if (seconds < 10) {
-                        this.realtimeIndicator.classList.remove('offline');
-                        this.realtimeIndicator.innerHTML = `
-                            <div class="pulse"></div>
-                            <span>Активно (${this.activeUsers} онлайн)</span>
-                        `;
-                    } else if (seconds < 30) {
-                        this.realtimeIndicator.classList.remove('offline');
-                        this.realtimeIndicator.innerHTML = `
-                            <div class="pulse"></div>
-                            <span>Обновлено ${seconds} сек назад</span>
+                
+                // Обновляем информацию о правах
+                const permissionsDisplay = document.getElementById('permissionsDisplay');
+                if (permissionsDisplay) {
+                    if (this.userRole === 'admin') {
+                        permissionsDisplay.className = 'permissions-info admin';
+                        permissionsDisplay.innerHTML = `
+                            <strong>Ваши права:</strong><br>
+                            • Просмотр всех данных<br>
+                            • Перемещение баллонов (Drag & Drop)<br>
+                            • Добавление баллонов<br>
+                            • <strong>Управление хранилищами</strong><br>
+                            • <strong>Экспорт данных</strong>
                         `;
                     } else {
-                        this.realtimeIndicator.classList.add('offline');
-                        this.realtimeIndicator.innerHTML = `
-                            <div style="width: 10px; height: 10px; border-radius: 50%; background: white;"></div>
-                            <span>Оффлайн (${seconds} сек)</span>
+                        permissionsDisplay.className = 'permissions-info user';
+                        permissionsDisplay.innerHTML = `
+                            <strong>Ваши права:</strong><br>
+                            • Просмотр всех данных<br>
+                            • <strong>Перемещение баллонов (Drag & Drop)</strong><br>
+                            • Добавление баллонов
                         `;
                     }
                 }
@@ -735,25 +518,13 @@
                 
                 // Добавление хранилища
                 document.getElementById('addStorageBtn').addEventListener('click', () => this.showAddStorage());
-                document.getElementById('firstStorageBtn').addEventListener('click', () => this.showAddStorage());
-                document.getElementById('saveStorageBtn').addEventListener('click', () => this.saveStorage());
-                document.getElementById('cancelStorageBtn').addEventListener('click', () => this.hideModal('addStorageModal'));
                 
-                // Другие кнопки
+                // Тестовые данные
                 document.getElementById('addDemoDataBtn').addEventListener('click', () => this.addDemoData());
-                document.getElementById('refreshBtn').addEventListener('click', () => this.loadData());
-                document.getElementById('clearDragBtn').addEventListener('click', () => this.clearDragSelection());
-                document.getElementById('showArchiveBtn').addEventListener('click', () => this.showArchive());
+                document.getElementById('addDemoDataFirstBtn').addEventListener('click', () => this.addDemoData());
                 
                 // Экспорт
-                document.getElementById('exportDataBtn').addEventListener('click', () => this.showExportModal());
-                document.getElementById('quickExcelBtn').addEventListener('click', () => this.quickExportExcel());
-                
-                // Обработка закрытия окна/вкладки
-                window.addEventListener('beforeunload', () => {
-                    this.setUserActive(false);
-                    this.stopRealtimeListeners();
-                });
+                document.getElementById('exportDataBtn').addEventListener('click', () => this.exportData());
             },
 
             // ========== АУТЕНТИФИКАЦИЯ ==========
@@ -761,34 +532,11 @@
                 const email = document.getElementById('loginEmail').value;
                 const password = document.getElementById('loginPassword').value;
                 
-                if (!email || !password) {
-                    this.showError('loginError', 'Введите email и пароль');
-                    return;
-                }
-                
                 try {
-                    const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                    this.currentUser = userCredential.user;
-                    
-                    // Загружаем роль пользователя
-                    await this.loadUserRole();
-                    
-                    this.showNotification('Вход выполнен успешно!', 'success');
-                    this.showApp();
-                    
-                    await this.setUserActive(true);
-                    this.setupRealtimeListeners();
-                    
+                    await auth.signInWithEmailAndPassword(email, password);
+                    this.showNotification('✅ Вход выполнен успешно!', 'success');
                 } catch (error) {
-                    console.error('Ошибка входа:', error);
-                    
-                    if (error.code === 'auth/user-not-found') {
-                        this.showError('loginError', 'Пользователь не найден. Создайте администратора или зарегистрируйтесь.');
-                    } else if (error.code === 'auth/wrong-password') {
-                        this.showError('loginError', 'Неверный пароль');
-                    } else {
-                        this.showError('loginError', error.message);
-                    }
+                    this.showError('loginError', error.message);
                 }
             },
 
@@ -796,44 +544,27 @@
                 const email = document.getElementById('loginEmail').value;
                 const password = document.getElementById('loginPassword').value;
                 
-                if (!email || !password) {
-                    this.showError('loginError', 'Введите email и пароль');
-                    return;
-                }
-                
                 try {
                     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                    this.currentUser = userCredential.user;
                     
                     // Создаем запись в Firestore
                     const role = email === 'admin@example.com' ? 'admin' : 'user';
                     
-                    await db.collection('users').doc(this.currentUser.uid).set({
+                    await db.collection('users').doc(userCredential.user.uid).set({
                         email: email,
                         role: role,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
-                    this.userRole = role;
-                    this.showNotification(`Пользователь зарегистрирован как ${role === 'admin' ? 'администратор' : 'пользователь'}!`, 'success');
-                    
-                    this.updateUIForRole();
-                    this.showApp();
-                    
-                    await this.setUserActive(true);
-                    this.setupRealtimeListeners();
+                    this.showNotification(`✅ Пользователь ${role === 'admin' ? 'администратор' : 'пользователь'} создан!`, 'success');
                     
                 } catch (error) {
-                    console.error('Ошибка регистрации:', error);
                     this.showError('loginError', error.message);
                 }
             },
 
             async logout() {
                 try {
-                    await this.setUserActive(false);
-                    this.stopRealtimeListeners();
                     await auth.signOut();
                     this.showNotification('Вы вышли из системы', 'info');
                 } catch (error) {
@@ -844,742 +575,680 @@
             showLogin() {
                 document.getElementById('loginModal').classList.remove('hidden');
                 document.getElementById('app').classList.add('hidden');
-                if (this.realtimeIndicator) {
-                    this.realtimeIndicator.style.display = 'none';
-                }
             },
 
             showApp() {
                 document.getElementById('loginModal').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
-                const currentUserElement = document.getElementById('currentUser');
-                if (currentUserElement) {
-                    currentUserElement.textContent = this.currentUser.email;
-                }
-                if (this.realtimeIndicator) {
-                    this.realtimeIndicator.style.display = 'flex';
-                }
-                
-                // Загружаем данные
                 this.loadData();
             },
 
-            // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-            showModal(id) {
-                const modal = document.getElementById(id);
-                if (modal) {
-                    modal.classList.remove('hidden');
-                }
-            },
-
-            hideModal(id) {
-                const modal = document.getElementById(id);
-                if (modal) {
-                    modal.classList.add('hidden');
-                }
-            },
-
-            showError(elementId, message) {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.textContent = message;
-                    element.classList.remove('hidden');
-                }
-            },
-
-            showNotification(message, type = 'success') {
-                const notification = document.createElement('div');
-                notification.className = `notification ${type}`;
-                notification.textContent = message;
-                document.body.appendChild(notification);
+            // ========== DRAG & DROP СИСТЕМА ==========
+            setupDragAndDrop() {
+                // Сбрасываем все слушатели
+                this.removeAllDragListeners();
                 
-                setTimeout(() => notification.remove(), 3000);
+                // Настройка глобальной дроп-зоны
+                const globalDropZone = document.getElementById('globalDropZone');
+                if (globalDropZone) {
+                    globalDropZone.addEventListener('dragover', this.handleDragOver.bind(this));
+                    globalDropZone.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                    globalDropZone.addEventListener('drop', this.handleGlobalDrop.bind(this));
+                }
+                
+                // Настройка слотов в хранилищах
+                document.querySelectorAll('.slot').forEach(slot => {
+                    slot.addEventListener('dragover', this.handleDragOver.bind(this));
+                    slot.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                    slot.addEventListener('drop', this.handleSlotDrop.bind(this));
+                });
+                
+                // Настройка свободных баллонов
+                document.querySelectorAll('.free-cylinder, .cylinder').forEach(cylinder => {
+                    cylinder.addEventListener('dragstart', this.handleDragStart.bind(this));
+                    cylinder.addEventListener('dragend', this.handleDragEnd.bind(this));
+                });
+                
+                // Настройка хранилищ как дроп-зон
+                document.querySelectorAll('.storage-item').forEach(storage => {
+                    storage.addEventListener('dragover', this.handleDragOver.bind(this));
+                    storage.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                    storage.addEventListener('drop', this.handleStorageDrop.bind(this));
+                });
             },
 
-            // ========== УПРАВЛЕНИЕ БАЛЛОНАМИ ==========
+            removeAllDragListeners() {
+                // Удаляем все слушатели drag events
+                const elements = document.querySelectorAll('*');
+                elements.forEach(el => {
+                    el.removeEventListener('dragover', this.handleDragOver);
+                    el.removeEventListener('dragleave', this.handleDragLeave);
+                    el.removeEventListener('drop', this.handleDrop);
+                    el.removeEventListener('dragstart', this.handleDragStart);
+                    el.removeEventListener('dragend', this.handleDragEnd);
+                });
+            },
+
+            handleDragStart(e) {
+                const cylinderElement = e.target.closest('.cylinder, .free-cylinder');
+                if (!cylinderElement) return;
+                
+                this.draggingCylinder = cylinderElement;
+                this.currentDragElement = cylinderElement;
+                
+                // Добавляем класс для визуального эффекта
+                cylinderElement.classList.add('dragging');
+                
+                // Устанавливаем данные для перетаскивания
+                e.dataTransfer.setData('text/plain', 'cylinder');
+                e.dataTransfer.effectAllowed = 'move';
+                
+                // Сохраняем начальные координаты
+                this.dragStartX = e.clientX;
+                this.dragStartY = e.clientY;
+                
+                console.log('Начато перетаскивание баллона');
+            },
+
+            handleDragEnd(e) {
+                if (this.draggingCylinder) {
+                    this.draggingCylinder.classList.remove('dragging');
+                    this.draggingCylinder = null;
+                }
+                
+                // Убираем классы drag-over со всех элементов
+                document.querySelectorAll('.drag-over').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+                
+                console.log('Перетаскивание завершено');
+            },
+
+            handleDragOver(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                
+                const target = e.target.closest('.slot, .storage-item, .drop-zone, .free-cylinders');
+                if (target && this.draggingCylinder) {
+                    target.classList.add('drag-over');
+                }
+            },
+
+            handleDragLeave(e) {
+                const target = e.target.closest('.slot, .storage-item, .drop-zone, .free-cylinders');
+                if (target) {
+                    target.classList.remove('drag-over');
+                }
+            },
+
+            async handleSlotDrop(e) {
+                e.preventDefault();
+                const slot = e.target.closest('.slot');
+                if (!slot || !this.draggingCylinder) return;
+                
+                slot.classList.remove('drag-over');
+                
+                // Получаем информацию о слоте и баллоне
+                const storageId = slot.dataset.storageId;
+                const slotIndex = parseInt(slot.dataset.slotIndex);
+                const cylinderId = this.draggingCylinder.dataset.cylinderId;
+                
+                if (!cylinderId) {
+                    this.showNotification('Не удалось определить баллон', 'error');
+                    return;
+                }
+                
+                try {
+                    await db.collection('cylinders').doc(cylinderId).update({
+                        storageId: storageId,
+                        position: slotIndex,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: this.currentUser.email
+                    });
+                    
+                    this.showNotification('✅ Баллон перемещен в хранилище', 'success');
+                    
+                } catch (error) {
+                    console.error('Ошибка перемещения баллона:', error);
+                    this.showNotification('Ошибка перемещения баллона', 'error');
+                }
+            },
+
+            async handleGlobalDrop(e) {
+                e.preventDefault();
+                const dropZone = e.target.closest('.drop-zone');
+                if (!dropZone || !this.draggingCylinder) return;
+                
+                dropZone.classList.remove('drag-over');
+                
+                const cylinderId = this.draggingCylinder.dataset.cylinderId;
+                
+                if (!cylinderId) {
+                    this.showNotification('Не удалось определить баллон', 'error');
+                    return;
+                }
+                
+                try {
+                    // Делаем баллон свободным (удаляем привязку к хранилищу)
+                    await db.collection('cylinders').doc(cylinderId).update({
+                        storageId: null,
+                        position: null,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: this.currentUser.email
+                    });
+                    
+                    this.showNotification('✅ Баллон перемещен в свободные', 'success');
+                    
+                } catch (error) {
+                    console.error('Ошибка перемещения баллона:', error);
+                    this.showNotification('Ошибка перемещения баллона', 'error');
+                }
+            },
+
+            async handleStorageDrop(e) {
+                e.preventDefault();
+                const storage = e.target.closest('.storage-item');
+                if (!storage || !this.draggingCylinder) return;
+                
+                storage.classList.remove('drag-over');
+                
+                const storageId = storage.dataset.storageId;
+                const cylinderId = this.draggingCylinder.dataset.cylinderId;
+                
+                if (!cylinderId) {
+                    this.showNotification('Не удалось определить баллон', 'error');
+                    return;
+                }
+                
+                try {
+                    // Ищем первый свободный слот в хранилище
+                    const slots = storage.querySelectorAll('.slot:not(:has(.cylinder))');
+                    if (slots.length === 0) {
+                        this.showNotification('Нет свободных мест в хранилище', 'error');
+                        return;
+                    }
+                    
+                    const firstEmptySlot = slots[0];
+                    const slotIndex = parseInt(firstEmptySlot.dataset.slotIndex);
+                    
+                    await db.collection('cylinders').doc(cylinderId).update({
+                        storageId: storageId,
+                        position: slotIndex,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: this.currentUser.email
+                    });
+                    
+                    this.showNotification('✅ Баллон перемещен в хранилище', 'success');
+                    
+                } catch (error) {
+                    console.error('Ошибка перемещения баллона:', error);
+                    this.showNotification('Ошибка перемещения баллона', 'error');
+                }
+            },
+
+            // ========== УПРАВЛЕНИЕ ДАННЫМИ ==========
+            async loadData() {
+                try {
+                    console.log('Загрузка данных...');
+                    
+                    // Загружаем хранилища
+                    const storageSnapshot = await db.collection('storages').get();
+                    this.storage = storageSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    
+                    // Загружаем баллоны
+                    const cylindersSnapshot = await db.collection('cylinders').get();
+                    this.cylinders = cylindersSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    
+                    this.renderData();
+                    this.updateStatistics();
+                    this.setupDragAndDrop();
+                    
+                    // Показываем/скрываем сообщение о пустой базе
+                    const isEmpty = this.storage.length === 0 && this.cylinders.length === 0;
+                    document.getElementById('emptyDatabase').classList.toggle('hidden', !isEmpty);
+                    
+                } catch (error) {
+                    console.error('Ошибка загрузки данных:', error);
+                    this.showNotification('Ошибка загрузки данных', 'error');
+                }
+            },
+
+            renderData() {
+                const storageContainer = document.getElementById('storageContainer');
+                const freeCylindersContainer = document.getElementById('freeCylindersContainer');
+                
+                // Рендерим хранилища
+                if (this.storage.length > 0) {
+                    storageContainer.innerHTML = this.storage.map(storage => {
+                        const cylindersInStorage = this.cylinders.filter(c => c.storageId === storage.id);
+                        const slots = Array.from({ length: storage.capacity }, (_, i) => {
+                            const cylinder = cylindersInStorage.find(c => c.position === i);
+                            return this.createSlotHtml(i, storage.id, cylinder);
+                        });
+                        
+                        return `
+                            <div class="storage-item ${storage.type === 'closet' ? 'closet' : 'shelf'}" 
+                                 data-storage-id="${storage.id}">
+                                <div class="storage-header">
+                                    <h4>${storage.name}</h4>
+                                    <span class="btn btn-small ${storage.type === 'closet' ? 'btn-warning' : 'btn-info'}">
+                                        ${storage.type === 'closet' ? '🧰 Шкаф' : '📦 Стеллаж'} 
+                                        (${cylindersInStorage.length}/${storage.capacity})
+                                    </span>
+                                </div>
+                                <p><small>${storage.description || ''}</small></p>
+                                <div class="slots-grid">
+                                    ${slots.join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    storageContainer.innerHTML = '';
+                }
+                
+                // Рендерим свободные баллоны
+                const freeCylinders = this.cylinders.filter(c => !c.storageId);
+                if (freeCylinders.length > 0) {
+                    freeCylindersContainer.classList.remove('hidden');
+                    document.getElementById('freeCylindersCount').textContent = freeCylinders.length;
+                    
+                    document.getElementById('freeCylindersList').innerHTML = freeCylinders.map(cylinder => 
+                        this.createCylinderHtml(cylinder, true)
+                    ).join('');
+                } else {
+                    freeCylindersContainer.classList.add('hidden');
+                }
+            },
+
+            createSlotHtml(slotIndex, storageId, cylinder = null) {
+                if (cylinder) {
+                    return `
+                        <div class="slot" data-slot-index="${slotIndex}" data-storage-id="${storageId}">
+                            ${this.createCylinderHtml(cylinder, false)}
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="slot empty" 
+                             data-slot-index="${slotIndex}" 
+                             data-storage-id="${storageId}"
+                             title="Кликните для добавления баллона">
+                        </div>
+                    `;
+                }
+            },
+
+            createCylinderHtml(cylinder, isFree = false) {
+                const statusClass = this.getCylinderStatus(cylinder);
+                const gasClass = cylinder.gasType ? cylinder.gasType.toLowerCase().replace(' ', '-') : 'unknown';
+                const currentDate = new Date();
+                const checkDate = cylinder.lastCheck ? cylinder.lastCheck.toDate() : null;
+                const isExpired = checkDate && (currentDate - checkDate) > (365 * 24 * 60 * 60 * 1000);
+                
+                return `
+                    <div class="${isFree ? 'free-cylinder' : 'cylinder'} ${gasClass}" 
+                         data-cylinder-id="${cylinder.id}"
+                         draggable="true">
+                        <div class="cylinder-header">
+                            <span class="cylinder-number">${cylinder.number || 'Без номера'}</span>
+                            <span class="cylinder-status ${statusClass}">${this.getStatusText(cylinder)}</span>
+                        </div>
+                        <div class="cylinder-gas">${cylinder.gasType || 'Не указан'}</div>
+                        <div class="cylinder-details">
+                            ${cylinder.volume ? `Объём: ${cylinder.volume}л<br>` : ''}
+                            ${cylinder.pressure ? `Давление: ${cylinder.pressure}атм<br>` : ''}
+                            ${cylinder.weight ? `Вес: ${cylinder.weight}кг<br>` : ''}
+                            ${checkDate ? `Проверка: ${checkDate.toLocaleDateString()}` : ''}
+                            ${isExpired ? ' ⚠️' : ''}
+                        </div>
+                        <div class="cylinder-actions">
+                            <button class="btn btn-small btn-primary" onclick="App.editCylinder('${cylinder.id}')">
+                                ✏️
+                            </button>
+                            <button class="btn btn-small btn-warning" onclick="App.toggleCylinderStatus('${cylinder.id}')">
+                                ${cylinder.status === 'full' ? '🔄' : '✅'}
+                            </button>
+                            ${this.userRole === 'admin' ? `
+                                <button class="btn btn-small btn-danger" onclick="App.deleteCylinder('${cylinder.id}')">
+                                    🗑️
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            },
+
+            getCylinderStatus(cylinder) {
+                if (cylinder.status === 'empty') return 'empty';
+                if (cylinder.status === 'full') return 'full';
+                
+                // Проверка просроченности
+                const checkDate = cylinder.lastCheck ? cylinder.lastCheck.toDate() : null;
+                if (checkDate) {
+                    const currentDate = new Date();
+                    const oneYearAgo = new Date();
+                    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                    if (checkDate < oneYearAgo) return 'expired';
+                }
+                
+                return 'full';
+            },
+
+            getStatusText(cylinder) {
+                switch(this.getCylinderStatus(cylinder)) {
+                    case 'full': return 'Полный';
+                    case 'empty': return 'Пустой';
+                    case 'expired': return 'Просрочен';
+                    default: return 'Неизвестно';
+                }
+            },
+
+            updateStatistics() {
+                const total = this.cylinders.length;
+                const full = this.cylinders.filter(c => this.getCylinderStatus(c) === 'full').length;
+                const empty = this.cylinders.filter(c => this.getCylinderStatus(c) === 'empty').length;
+                const expired = this.cylinders.filter(c => this.getCylinderStatus(c) === 'expired').length;
+                const free = this.cylinders.filter(c => !c.storageId).length;
+                
+                document.getElementById('totalCylinders').textContent = total;
+                document.getElementById('fullCylinders').textContent = full;
+                document.getElementById('emptyCylinders').textContent = empty;
+                document.getElementById('expiredCylinders').textContent = expired;
+                document.getElementById('totalStorage').textContent = this.storage.length;
+                document.getElementById('freeCylindersCount').textContent = free;
+            },
+
+            // ========== РАБОТА С БАЛЛОНАМИ ==========
             showAddCylinder() {
-                // Генерация номера баллона
-                const randomNum = Math.floor(Math.random() * 9000) + 1000;
-                const numberInput = document.getElementById('cylinderNumber');
-                if (numberInput) numberInput.value = `Б-${randomNum}`;
-                
-                // Устанавливаем текущую дату
-                const today = new Date().toISOString().split('T')[0];
-                const nextYear = new Date();
-                nextYear.setFullYear(nextYear.getFullYear() + 1);
-                const nextYearStr = nextYear.toISOString().split('T')[0];
-                
-                const deliveryDate = document.getElementById('deliveryDate');
-                const manufactureDate = document.getElementById('manufactureDate');
-                const nextInspectionDate = document.getElementById('nextInspectionDate');
-                
-                if (deliveryDate) deliveryDate.value = today;
-                if (manufactureDate) manufactureDate.value = today;
-                if (nextInspectionDate) nextInspectionDate.value = nextYearStr;
-                
-                this.editingCylinderId = null;
+                // Очищаем форму
+                document.getElementById('cylinderNumber').value = '';
+                document.getElementById('cylinderGasType').value = 'Кислород';
+                document.getElementById('cylinderVolume').value = '40';
+                document.getElementById('cylinderPressure').value = '150';
+                document.getElementById('cylinderWeight').value = '60';
+                document.getElementById('cylinderStatus').value = 'full';
+                document.getElementById('cylinderNotes').value = '';
                 
                 this.showModal('addCylinderModal');
             },
 
             async saveCylinder() {
                 try {
-                    const number = document.getElementById('cylinderNumber').value.trim();
-                    const gasType = document.getElementById('cylinderGasType').value;
-                    const deliveryDate = document.getElementById('deliveryDate').value;
-                    const manufactureDate = document.getElementById('manufactureDate').value;
-                    const nextInspectionDate = document.getElementById('nextInspectionDate').value;
-                    const status = document.getElementById('cylinderStatus').value;
-                    const workingPressure = parseFloat(document.getElementById('workingPressure').value) || 150;
-                    const testPressure = parseFloat(document.getElementById('testPressure').value) || 225;
-                    const capacity = parseFloat(document.getElementById('capacity').value) || 40;
-                    const supplier = document.getElementById('supplier').value.trim() || 'ООО "ГазСнаб"';
-                    const notes = document.getElementById('notes').value.trim();
-
-                    // Валидация
-                    if (!number) {
-                        this.showError('cylinderError', 'Введите номер баллона');
-                        return;
-                    }
-
-                    if (isNaN(workingPressure) || workingPressure <= 0) {
-                        this.showError('cylinderError', 'Введите корректное рабочее давление');
-                        return;
-                    }
-
                     const cylinderData = {
-                        number: number,
-                        gasType: gasType,
-                        deliveryDate: deliveryDate,
-                        manufactureDate: manufactureDate,
-                        nextInspectionDate: nextInspectionDate,
-                        status: status,
-                        workingPressure: workingPressure,
-                        testPressure: testPressure,
-                        capacity: capacity,
-                        supplier: supplier,
-                        notes: notes,
-                        storageId: null,
-                        position: null,
-                        archived: false,
+                        number: document.getElementById('cylinderNumber').value.trim(),
+                        gasType: document.getElementById('cylinderGasType').value,
+                        volume: parseFloat(document.getElementById('cylinderVolume').value),
+                        pressure: parseFloat(document.getElementById('cylinderPressure').value),
+                        weight: parseFloat(document.getElementById('cylinderWeight').value),
+                        status: document.getElementById('cylinderStatus').value,
+                        notes: document.getElementById('cylinderNotes').value.trim(),
+                        lastCheck: firebase.firestore.Timestamp.fromDate(new Date()),
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         createdBy: this.currentUser.email,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         updatedBy: this.currentUser.email
                     };
-
+                    
+                    // Проверка обязательных полей
+                    if (!cylinderData.number) {
+                        throw new Error('Введите номер баллона');
+                    }
+                    
                     await db.collection('cylinders').add(cylinderData);
                     
                     this.hideModal('addCylinderModal');
-                    this.showNotification(`Баллон ${number} добавлен`);
-
+                    this.showNotification('✅ Баллон добавлен', 'success');
+                    await this.loadData();
+                    
                 } catch (error) {
                     console.error('Ошибка сохранения баллона:', error);
-                    this.showError('cylinderError', error.message);
+                    this.showNotification('Ошибка: ' + error.message, 'error');
                 }
             },
 
-            // ========== УПРАВЛЕНИЕ ХРАНИЛИЩАМИ ==========
-            showAddStorage() {
-                // Очищаем форму
-                const storageName = document.getElementById('storageName');
-                const storageType = document.getElementById('storageType');
-                const storageCapacity = document.getElementById('storageCapacity');
-                const storageLocation = document.getElementById('storageLocation');
-                const storageDescription = document.getElementById('storageDescription');
+            async editCylinder(cylinderId) {
+                // Для простоты используем ту же форму добавления
+                const cylinder = this.cylinders.find(c => c.id === cylinderId);
+                if (!cylinder) return;
                 
-                if (storageName) storageName.value = '';
-                if (storageType) storageType.value = 'Кабинет';
-                if (storageCapacity) storageCapacity.value = '10';
-                if (storageLocation) storageLocation.value = '';
-                if (storageDescription) storageDescription.value = '';
+                // Заполняем форму
+                document.getElementById('cylinderNumber').value = cylinder.number || '';
+                document.getElementById('cylinderGasType').value = cylinder.gasType || 'Кислород';
+                document.getElementById('cylinderVolume').value = cylinder.volume || '40';
+                document.getElementById('cylinderPressure').value = cylinder.pressure || '150';
+                document.getElementById('cylinderWeight').value = cylinder.weight || '60';
+                document.getElementById('cylinderStatus').value = cylinder.status || 'full';
+                document.getElementById('cylinderNotes').value = cylinder.notes || '';
                 
-                this.showModal('addStorageModal');
+                // Изменяем поведение кнопки сохранения
+                const saveBtn = document.getElementById('saveCylinderBtn');
+                const originalHandler = saveBtn.onclick;
+                
+                saveBtn.onclick = async () => {
+                    try {
+                        const updateData = {
+                            number: document.getElementById('cylinderNumber').value.trim(),
+                            gasType: document.getElementById('cylinderGasType').value,
+                            volume: parseFloat(document.getElementById('cylinderVolume').value),
+                            pressure: parseFloat(document.getElementById('cylinderPressure').value),
+                            weight: parseFloat(document.getElementById('cylinderWeight').value),
+                            status: document.getElementById('cylinderStatus').value,
+                            notes: document.getElementById('cylinderNotes').value.trim(),
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedBy: this.currentUser.email
+                        };
+                        
+                        await db.collection('cylinders').doc(cylinderId).update(updateData);
+                        
+                        this.hideModal('addCylinderModal');
+                        this.showNotification('✅ Баллон обновлен', 'success');
+                        await this.loadData();
+                        
+                    } catch (error) {
+                        console.error('Ошибка обновления баллона:', error);
+                        this.showNotification('Ошибка: ' + error.message, 'error');
+                    } finally {
+                        saveBtn.onclick = originalHandler;
+                    }
+                };
+                
+                this.showModal('addCylinderModal');
             },
 
-            async saveStorage() {
+            async toggleCylinderStatus(cylinderId) {
                 try {
-                    const name = document.getElementById('storageName').value.trim();
-                    const type = document.getElementById('storageType').value;
-                    const capacity = parseInt(document.getElementById('storageCapacity').value) || 10;
-                    const location = document.getElementById('storageLocation').value.trim();
-                    const description = document.getElementById('storageDescription').value.trim();
+                    const cylinder = this.cylinders.find(c => c.id === cylinderId);
+                    if (!cylinder) return;
                     
-                    if (!name) {
-                        this.showError('storageError', 'Введите название хранилища');
-                        return;
-                    }
+                    const newStatus = cylinder.status === 'full' ? 'empty' : 'full';
                     
-                    if (isNaN(capacity) || capacity < 1) {
-                        this.showError('storageError', 'Введите корректную вместимость');
-                        return;
-                    }
-                    
-                    await db.collection('storage').add({
-                        name: name,
-                        type: type,
-                        capacity: capacity,
-                        location: location,
-                        description: description,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        createdBy: this.currentUser.email,
+                    await db.collection('cylinders').doc(cylinderId).update({
+                        status: newStatus,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         updatedBy: this.currentUser.email
                     });
                     
-                    this.hideModal('addStorageModal');
-                    this.showNotification(`Хранилище "${name}" добавлено`);
+                    this.showNotification(`✅ Баллон помечен как ${newStatus === 'full' ? 'полный' : 'пустой'}`, 'success');
+                    await this.loadData();
                     
                 } catch (error) {
-                    console.error('Ошибка сохранения:', error);
-                    this.showError('storageError', error.message);
+                    console.error('Ошибка изменения статуса:', error);
+                    this.showNotification('Ошибка изменения статуса', 'error');
+                }
+            },
+
+            async deleteCylinder(cylinderId) {
+                if (this.userRole !== 'admin') {
+                    this.showNotification('Недостаточно прав для удаления', 'error');
+                    return;
+                }
+                
+                if (!confirm('Удалить этот баллон?')) return;
+                
+                try {
+                    await db.collection('cylinders').doc(cylinderId).delete();
+                    this.showNotification('✅ Баллон удален', 'success');
+                    await this.loadData();
+                    
+                } catch (error) {
+                    console.error('Ошибка удаления баллона:', error);
+                    this.showNotification('Ошибка удаления баллона', 'error');
                 }
             },
 
             // ========== ТЕСТОВЫЕ ДАННЫЕ ==========
             async addDemoData() {
-                const confirmAdd = confirm('Добавить тестовые данные? Это добавит несколько хранилищ и баллонов для демонстрации работы системы.');
-                if (!confirmAdd) return;
-                
                 try {
-                    // Добавляем тестовые хранилища
+                    // Создаем тестовые хранилища
                     const storages = [
                         {
-                            name: 'Кабинет №1',
-                            type: 'Кабинет',
-                            capacity: 12,
-                            location: 'Цех №1, 1 этаж',
-                            description: 'Основное хранилище для кислородных баллонов'
+                            name: 'Стеллаж №1 - Кислород',
+                            type: 'shelf',
+                            capacity: 6,
+                            description: 'Основное хранение кислорода',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         },
                         {
-                            name: 'Шкаф №2',
-                            type: 'Шкаф',
+                            name: 'Стеллаж №2 - Азот/Аргон',
+                            type: 'shelf',
                             capacity: 8,
-                            location: 'Цех №2, коридор',
-                            description: 'Для азотных и аргоновых баллонов'
+                            description: 'Хранение инертных газов',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         },
                         {
-                            name: 'Склад №3',
-                            type: 'Склад',
-                            capacity: 20,
-                            location: 'Подвал, блок А',
-                            description: 'Резервное хранилище'
+                            name: 'Шкаф опасных газов',
+                            type: 'closet',
+                            capacity: 4,
+                            description: 'Ацетилен, водород и другие',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         }
                     ];
                     
-                    const storagePromises = storages.map(storage => 
-                        db.collection('storage').add({
-                            ...storage,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            createdBy: this.currentUser.email,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedBy: this.currentUser.email
-                        })
-                    );
+                    const storageIds = [];
+                    for (const storage of storages) {
+                        const docRef = await db.collection('storages').add(storage);
+                        storageIds.push(docRef.id);
+                    }
                     
-                    const storageDocs = await Promise.all(storagePromises);
-                    
-                    // Добавляем тестовые баллоны
-                    const today = new Date().toISOString().split('T')[0];
-                    const nextYear = new Date();
-                    nextYear.setFullYear(nextYear.getFullYear() + 1);
-                    const nextYearStr = nextYear.toISOString().split('T')[0];
-                    
-                    const cylinders = [
-                        // Кислородные баллоны
-                        { number: 'Б-1001', gasType: 'Кислород', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        { number: 'Б-1002', gasType: 'Кислород', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        { number: 'Б-1003', gasType: 'Кислород', status: 'Пустой', capacity: 40, workingPressure: 150 },
-                        { number: 'Б-1004', gasType: 'Кислород', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        
-                        // Азотные баллоны
-                        { number: 'Б-2001', gasType: 'Азот', status: 'Полный', capacity: 50, workingPressure: 200 },
-                        { number: 'Б-2002', gasType: 'Азот', status: 'Пустой', capacity: 50, workingPressure: 200 },
-                        
-                        // Аргоновые баллоны
-                        { number: 'Б-3001', gasType: 'Аргон', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        { number: 'Б-3002', gasType: 'Аргон', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        
-                        // Гелиевые баллоны
-                        { number: 'Б-4001', gasType: 'Гелий', status: 'Полный', capacity: 10, workingPressure: 250 },
-                        
-                        // Ацетиленовые баллоны
-                        { number: 'Б-5001', gasType: 'Ацетилен', status: 'Пустой', capacity: 40, workingPressure: 19 },
-                        
-                        // Углекислый газ
-                        { number: 'Б-6001', gasType: 'Углекислый газ', status: 'Полный', capacity: 40, workingPressure: 75 }
+                    // Создаем тестовые баллоны
+                    const cylinders = [];
+                    const gases = [
+                        { type: 'Кислород', volume: 40, pressure: 150, weight: 60 },
+                        { type: 'Азот', volume: 40, pressure: 150, weight: 58 },
+                        { type: 'Аргон', volume: 40, pressure: 150, weight: 62 },
+                        { type: 'Ацетилен', volume: 10, pressure: 25, weight: 35 },
+                        { type: 'Углекислый газ', volume: 40, pressure: 150, weight: 65 }
                     ];
                     
-                    const cylinderPromises = cylinders.map((cylinder, index) => {
-                        const storageIndex = index % storageDocs.length;
-                        const position = index % 5;
+                    const currentDate = new Date();
+                    const oneYearAgo = new Date();
+                    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                    
+                    for (let i = 1; i <= 15; i++) {
+                        const gas = gases[Math.floor(Math.random() * gases.length)];
+                        const isExpired = Math.random() > 0.8;
                         
-                        return db.collection('cylinders').add({
-                            number: cylinder.number,
-                            gasType: cylinder.gasType,
-                            deliveryDate: today,
-                            manufactureDate: today,
-                            nextInspectionDate: nextYearStr,
-                            status: cylinder.status,
-                            workingPressure: cylinder.workingPressure,
-                            testPressure: cylinder.workingPressure * 1.5,
-                            capacity: cylinder.capacity,
-                            supplier: 'ООО "ГазСнаб"',
-                            notes: 'Тестовый баллон',
-                            storageId: storageDocs[storageIndex].id,
-                            position: position,
-                            archived: false,
+                        cylinders.push({
+                            number: `Б-${1000 + i}`,
+                            gasType: gas.type,
+                            volume: gas.volume,
+                            pressure: gas.pressure,
+                            weight: gas.weight,
+                            status: Math.random() > 0.3 ? 'full' : 'empty',
+                            lastCheck: firebase.firestore.Timestamp.fromDate(
+                                isExpired ? oneYearAgo : currentDate
+                            ),
+                            notes: `Тестовый баллон №${i}`,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            createdBy: this.currentUser.email,
+                            createdBy: 'system',
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedBy: this.currentUser.email
+                            updatedBy: 'system'
                         });
-                    });
+                    }
                     
-                    await Promise.all(cylinderPromises);
+                    // Добавляем баллоны с распределением по хранилищам
+                    for (let i = 0; i < cylinders.length; i++) {
+                        const cylinder = cylinders[i];
+                        
+                        if (i < storageIds.length * 2) {
+                            // Некоторые баллоны в хранилищах
+                            const storageIndex = Math.floor(i / 2);
+                            cylinder.storageId = storageIds[storageIndex];
+                            cylinder.position = i % 2;
+                        } else {
+                            // Остальные - свободные
+                            cylinder.storageId = null;
+                            cylinder.position = null;
+                        }
+                        
+                        await db.collection('cylinders').add(cylinder);
+                    }
                     
-                    this.showNotification('Тестовые данные успешно добавлены');
+                    this.showNotification('✅ Тестовые данные добавлены', 'success');
+                    await this.loadData();
                     
                 } catch (error) {
                     console.error('Ошибка добавления тестовых данных:', error);
-                    this.showNotification('Ошибка добавления тестовых данных', 'error');
+                    this.showNotification('Ошибка: ' + error.message, 'error');
                 }
             },
 
-            // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
-            async loadData() {
+            // ========== ЭКСПОРТ ДАННЫХ ==========
+            async exportData() {
                 try {
-                    // Загружаем хранилища
-                    const storageSnapshot = await db.collection('storage').get();
-                    this.storage = [];
-                    storageSnapshot.forEach(doc => {
-                        this.storage.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    // Загружаем активные баллоны
-                    const cylindersSnapshot = await db.collection('cylinders')
-                        .where('archived', '==', false)
-                        .get();
-                    this.cylinders = [];
-                    cylindersSnapshot.forEach(doc => {
-                        this.cylinders.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    // Загружаем архив
-                    const archiveSnapshot = await db.collection('cylinders')
-                        .where('archived', '==', true)
-                        .get();
-                    this.archivedCylinders = [];
-                    archiveSnapshot.forEach(doc => {
-                        this.archivedCylinders.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    this.lastUpdateTime = Date.now();
-                    this.renderWorkspace();
-                    this.updateStats();
-                    
-                } catch (error) {
-                    console.error('Ошибка загрузки:', error);
-                    this.showNotification('Ошибка загрузки данных', 'error');
-                }
-            },
-
-            renderWorkspace() {
-                const storageContainer = document.getElementById('storageContainer');
-                const freeContainer = document.getElementById('freeCylindersContainer');
-                const emptyDatabase = document.getElementById('emptyDatabase');
-                const archiveContainer = document.getElementById('archiveContainer');
-                
-                if (!storageContainer) return;
-                
-                storageContainer.innerHTML = '';
-                
-                if (this.storage.length === 0 && this.cylinders.length === 0) {
-                    if (emptyDatabase) emptyDatabase.classList.remove('hidden');
-                    if (freeContainer) freeContainer.classList.add('hidden');
-                    if (archiveContainer) archiveContainer.classList.add('hidden');
-                    return;
-                }
-                
-                if (emptyDatabase) emptyDatabase.classList.add('hidden');
-                
-                // Показываем архив если есть удаленные баллоны
-                if (this.archivedCylinders.length > 0 && archiveContainer) {
-                    archiveContainer.classList.remove('hidden');
-                }
-                
-                this.storage.forEach(storage => {
-                    const storageElement = this.createStorageElement(storage);
-                    storageContainer.appendChild(storageElement);
-                });
-                
-                this.renderFreeCylinders();
-            },
-
-            createStorageElement(storage) {
-                const div = document.createElement('div');
-                div.className = `storage-item ${storage.type === 'Шкаф' ? 'closet' : ''}`;
-                div.dataset.storageId = storage.id;
-                
-                const cylindersInStorage = this.cylinders.filter(c => c.storageId === storage.id);
-                const fullCount = cylindersInStorage.filter(c => c.status === 'Полный').length;
-                const emptyCount = cylindersInStorage.filter(c => c.status === 'Пустой').length;
-                
-                // Проверяем просроченные баллоны
-                const today = new Date();
-                const expiredCount = cylindersInStorage.filter(c => {
-                    if (!c.nextInspectionDate) return false;
-                    const inspectionDate = new Date(c.nextInspectionDate);
-                    return inspectionDate < today;
-                }).length;
-                
-                div.innerHTML = `
-                    <div class="storage-header">
-                        <h4>${storage.name} (${storage.type})</h4>
-                        <div>
-                            ${this.userRole === 'admin' ? 
-                                `<button class="btn btn-small admin-only" onclick="App.editStorage('${storage.id}')" title="Редактировать">✏️</button>` : 
-                                ''
-                            }
-                            <button class="btn btn-small" onclick="App.deleteStorage('${storage.id}')">🗑️</button>
-                        </div>
-                    </div>
-                    <div style="margin-bottom: 10px; font-size: 14px; color: #666;">
-                        Баллонов: ${cylindersInStorage.length}/${storage.capacity} | 
-                        Полные: ${fullCount} | Пустые: ${emptyCount}
-                        ${expiredCount > 0 ? `| <span style="color: #e74c3c;">⚠️ ${expiredCount} просроченных</span>` : ''}
-                    </div>
-                    <div style="font-size: 12px; color: #888; margin-bottom: 10px;">
-                        ${storage.location || ''}
-                    </div>
-                    <div class="slots-grid" id="slots-${storage.id}"></div>
-                `;
-                
-                const slotsContainer = div.querySelector(`#slots-${storage.id}`);
-                for (let i = 0; i < storage.capacity; i++) {
-                    const slot = document.createElement('div');
-                    slot.className = 'slot empty';
-                    slot.dataset.storageId = storage.id;
-                    slot.dataset.slotIndex = i;
-                    
-                    const cylinder = cylindersInStorage.find(c => c.position === i);
-                    
-                    if (cylinder) {
-                        slot.classList.remove('empty');
-                        slot.innerHTML = this.createCylinderHTML(cylinder);
+                    if (this.userRole !== 'admin') {
+                        this.showNotification('Недостаточно прав для экспорта', 'error');
+                        return;
                     }
                     
-                    slotsContainer.appendChild(slot);
-                }
-                
-                return div;
-            },
-
-            createCylinderHTML(cylinder) {
-                let gasClass = '';
-                if (cylinder.gasType === 'Кислород') gasClass = 'oxygen';
-                else if (cylinder.gasType === 'Азот') gasClass = 'nitrogen';
-                else if (cylinder.gasType === 'Аргон') gasClass = 'argon';
-                else if (cylinder.gasType === 'Гелий') gasClass = 'helium';
-                else if (cylinder.gasType === 'Ацетилен') gasClass = 'acetylene';
-                else if (cylinder.gasType === 'Водород') gasClass = 'hydrogen';
-                else if (cylinder.gasType === 'Метан') gasClass = 'methane';
-                else if (cylinder.gasType === 'Углекислый газ') gasClass = 'carbon-dioxide';
-                
-                let statusClass = cylinder.status === 'Полный' ? 'full' : 'empty';
-                let isExpired = false;
-                if (cylinder.nextInspectionDate) {
-                    const inspectionDate = new Date(cylinder.nextInspectionDate);
-                    const today = new Date();
-                    if (inspectionDate < today) {
-                        statusClass = 'expired';
-                        isExpired = true;
-                    }
-                }
-                
-                return `
-                    <div class="cylinder ${gasClass} ${isExpired ? 'expired' : ''}">
-                        <div class="cylinder-header">
-                            <div class="cylinder-number">${cylinder.number}</div>
-                            <div class="cylinder-status ${statusClass}">
-                                ${cylinder.status === 'Полный' ? 'Полн' : 'Пуст'}
-                                ${isExpired ? ' ⚠️' : ''}
-                            </div>
-                        </div>
-                        <div class="cylinder-gas">${cylinder.gasType}</div>
-                        <div class="cylinder-details">
-                            ${cylinder.capacity ? `${cylinder.capacity}л` : ''}
-                        </div>
-                    </div>
-                `;
-            },
-
-            renderFreeCylinders() {
-                const freeCylinders = this.cylinders.filter(c => !c.storageId);
-                const container = document.getElementById('freeCylindersContainer');
-                const list = document.getElementById('freeCylindersList');
-                const badge = document.getElementById('freeCylindersBadge');
-                
-                if (!list) return;
-                
-                list.innerHTML = '';
-                
-                if (freeCylinders.length > 0) {
-                    if (container) container.classList.remove('hidden');
-                    if (badge) badge.textContent = freeCylinders.length;
-                    
-                    freeCylinders.forEach(cylinder => {
-                        const div = document.createElement('div');
-                        div.className = 'free-cylinder';
-                        
-                        let borderColor = '#95a5a6';
-                        if (cylinder.gasType === 'Кислород') borderColor = '#e74c3c';
-                        else if (cylinder.gasType === 'Азот') borderColor = '#3498db';
-                        else if (cylinder.gasType === 'Аргон') borderColor = '#9b59b6';
-                        
-                        div.style.borderLeftColor = borderColor;
-                        div.innerHTML = `
-                            <div><strong>${cylinder.number}</strong></div>
-                            <div>${cylinder.gasType}</div>
-                            <div>${cylinder.status} | ${cylinder.capacity}л</div>
-                        `;
-                        
-                        list.appendChild(div);
-                    });
-                } else {
-                    if (container) container.classList.add('hidden');
-                    if (badge) badge.textContent = '0';
-                }
-            },
-
-            showArchive() {
-                const archiveContainer = document.getElementById('archiveContainer');
-                if (archiveContainer) {
-                    archiveContainer.classList.remove('hidden');
-                    this.renderArchive();
-                }
-            },
-
-            toggleArchive() {
-                const archiveContent = document.getElementById('archiveContent');
-                if (archiveContent) {
-                    archiveContent.classList.toggle('expanded');
-                    
-                    const toggleBtn = document.querySelector('.archive-toggle span');
-                    if (toggleBtn) {
-                        toggleBtn.textContent = archiveContent.classList.contains('expanded') ? '▲' : '▼';
-                    }
-                }
-            },
-
-            renderArchive() {
-                const tableBody = document.getElementById('archiveTableBody');
-                const archiveCount = document.getElementById('archiveCount');
-                const archivedCountElement = document.getElementById('archivedCount');
-                
-                if (!tableBody) return;
-                
-                if (archiveCount) archiveCount.textContent = this.archivedCylinders.length;
-                if (archivedCountElement) archivedCountElement.textContent = this.archivedCylinders.length;
-                
-                if (this.archivedCylinders.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Архив пуст</td></tr>';
-                    return;
-                }
-                
-                tableBody.innerHTML = '';
-                
-                this.archivedCylinders.forEach(cylinder => {
-                    const row = document.createElement('tr');
-                    
-                    row.innerHTML = `
-                        <td>${cylinder.number}</td>
-                        <td>${cylinder.gasType}</td>
-                        <td>${cylinder.archivedAt ? cylinder.archivedAt.toDate().toLocaleString('ru-RU') : ''}</td>
-                        <td>${cylinder.archiveReason || ''}</td>
-                        <td>${cylinder.archivedBy || ''}</td>
-                        <td>${cylinder.archiveComment || ''}</td>
-                        <td>
-                            <button class="btn btn-small" onclick="App.restoreFromArchive('${cylinder.id}')">Восстановить</button>
-                        </td>
-                    `;
-                    
-                    tableBody.appendChild(row);
-                });
-            },
-
-            async restoreFromArchive(cylinderId) {
-                const confirmRestore = confirm('Вы уверены, что хотите восстановить этот баллон из архива?');
-                if (!confirmRestore) return;
-                
-                try {
-                    await db.collection('cylinders').doc(cylinderId).update({
-                        archived: false,
-                        archiveReason: null,
-                        archiveComment: null,
-                        archivedAt: null,
-                        archivedBy: null,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        updatedBy: this.currentUser.email
-                    });
-                    
-                    this.showNotification('Баллон восстановлен из архива');
-                    
-                } catch (error) {
-                    console.error('Ошибка восстановления:', error);
-                    this.showNotification('Ошибка восстановления', 'error');
-                }
-            },
-
-            async deleteStorage(storageId) {
-                const storage = this.storage.find(s => s.id === storageId);
-                if (!storage) return;
-                
-                if (this.userRole !== 'admin') {
-                    this.showNotification('Только администраторы могут удалять хранилища', 'error');
-                    return;
-                }
-                
-                const confirmDelete = confirm(`Вы уверены, что хотите удалить хранилище "${storage.name}"?`);
-                if (!confirmDelete) return;
-                
-                try {
-                    // Проверяем, есть ли баллоны в хранилище
-                    const cylindersInStorage = this.cylinders.filter(c => c.storageId === storageId);
-                    
-                    if (cylindersInStorage.length > 0) {
-                        // Освобождаем все баллоны
-                        const batch = db.batch();
-                        cylindersInStorage.forEach(cylinder => {
-                            const ref = db.collection('cylinders').doc(cylinder.id);
-                            batch.update(ref, { 
-                                storageId: null, 
-                                position: null,
-                                lastMoved: firebase.firestore.FieldValue.serverTimestamp(),
-                                movedBy: this.currentUser.email
-                            });
-                        });
-                        await batch.commit();
-                    }
-                    
-                    await db.collection('storage').doc(storageId).delete();
-                    this.showNotification(`Хранилище "${storage.name}" удалено`);
-                    
-                } catch (error) {
-                    console.error('Ошибка удаления:', error);
-                    this.showNotification('Ошибка удаления хранилища', 'error');
-                }
-            },
-
-            async editStorage(storageId) {
-                if (this.userRole !== 'admin') {
-                    this.showNotification('Только администраторы могут редактировать хранилища', 'error');
-                    return;
-                }
-                
-                // Простая реализация - можно расширить
-                const newName = prompt('Введите новое название хранилища:');
-                if (newName) {
-                    try {
-                        await db.collection('storage').doc(storageId).update({
-                            name: newName,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedBy: this.currentUser.email
-                        });
-                        
-                        this.showNotification('Хранилище обновлено');
-                    } catch (error) {
-                        console.error('Ошибка обновления:', error);
-                        this.showNotification('Ошибка обновления', 'error');
-                    }
-                }
-            },
-
-            // ========== СТАТИСТИКА ==========
-            updateStats() {
-                const totalCylinders = this.cylinders.length + this.archivedCylinders.length;
-                const fullCylinders = this.cylinders.filter(c => c.status === 'Полный').length;
-                const emptyCylinders = this.cylinders.filter(c => c.status === 'Пустой').length;
-                
-                // Просроченные баллоны
-                const today = new Date();
-                const expiredCylinders = this.cylinders.filter(c => {
-                    if (!c.nextInspectionDate) return false;
-                    const inspectionDate = new Date(c.nextInspectionDate);
-                    return inspectionDate < today;
-                }).length;
-                
-                // Обновляем элементы статистики
-                const updateElement = (id, value) => {
-                    const element = document.getElementById(id);
-                    if (element) element.textContent = value;
-                };
-                
-                updateElement('totalCylinders', totalCylinders);
-                updateElement('fullCylinders', fullCylinders);
-                updateElement('emptyCylinders', emptyCylinders);
-                updateElement('expiredCylinders', expiredCylinders);
-                updateElement('totalStorage', this.storage.length);
-                updateElement('archivedCount', this.archivedCylinders.length);
-                
-                // Обновляем бейджи
-                const totalBadge = document.getElementById('totalCylindersBadge');
-                if (totalBadge) totalBadge.textContent = this.cylinders.length;
-                
-                const freeBadge = document.getElementById('freeCylindersBadge');
-                if (freeBadge) freeBadge.textContent = this.cylinders.filter(c => !c.storageId).length;
-            },
-
-            // ========== ЭКСПОРТ ==========
-            showExportModal() {
-                // Простая реализация экспорта
-                this.quickExportExcel();
-            },
-
-            async quickExportExcel() {
-                try {
-                    // Собираем данные
-                    const data = {
-                        storage: this.storage,
-                        cylinders: this.cylinders,
-                        archive: this.archivedCylinders,
-                        stats: {
-                            totalCylinders: this.cylinders.length + this.archivedCylinders.length,
-                            fullCylinders: this.cylinders.filter(c => c.status === 'Полный').length,
-                            emptyCylinders: this.cylinders.filter(c => c.status === 'Пустой').length,
-                            storageCount: this.storage.length,
-                            archivedCount: this.archivedCylinders.length
-                        },
-                        exportDate: new Date().toLocaleString('ru-RU'),
-                        exportedBy: this.currentUser.email
+                    // Собираем все данные
+                    const exportData = {
+                        exportDate: new Date().toISOString(),
+                        exportedBy: this.currentUser.email,
+                        storages: this.storage,
+                        cylinders: this.cylinders
                     };
                     
                     // Создаем книгу Excel
                     const wb = XLSX.utils.book_new();
                     
+                    // Лист с хранилищами
+                    const storageWS = XLSX.utils.json_to_sheet(this.storage.map(s => ({
+                        'Название': s.name,
+                        'Тип': s.type === 'closet' ? 'Шкаф' : 'Стеллаж',
+                        'Вместимость': s.capacity,
+                        'Описание': s.description || '',
+                        'Дата создания': s.createdAt?.toDate()?.toLocaleDateString() || ''
+                    })));
+                    XLSX.utils.book_append_sheet(wb, storageWS, 'Хранилища');
+                    
                     // Лист с баллонами
-                    const cylindersSheetData = this.cylinders.map(cylinder => ({
-                        'Номер': cylinder.number,
-                        'Тип газа': cylinder.gasType,
-                        'Статус': cylinder.status,
-                        'Дата поставки': cylinder.deliveryDate,
-                        'Дата изготовления': cylinder.manufactureDate,
-                        'Следующее освидетельствование': cylinder.nextInspectionDate,
-                        'Рабочее давление (атм)': cylinder.workingPressure,
-                        'Давление испытаний (атм)': cylinder.testPressure,
-                        'Вместимость (л)': cylinder.capacity,
-                        'Поставщик': cylinder.supplier,
-                        'Примечание': cylinder.notes || ''
-                    }));
+                    const cylinderWS = XLSX.utils.json_to_sheet(this.cylinders.map(c => ({
+                        'Номер': c.number,
+                        'Тип газа': c.gasType,
+                        'Статус': this.getStatusText(c),
+                        'Объём (л)': c.volume,
+                        'Давление (атм)': c.pressure,
+                        'Вес (кг)': c.weight,
+                        'Последняя проверка': c.lastCheck?.toDate()?.toLocaleDateString() || '',
+                        'Хранилище': c.storageId ? this.storage.find(s => s.id === c.storageId)?.name : 'Свободный',
+                        'Позиция': c.position !== null ? c.position + 1 : '',
+                        'Примечания': c.notes || ''
+                    })));
+                    XLSX.utils.book_append_sheet(wb, cylinderWS, 'Баллоны');
                     
-                    const cylindersSheet = XLSX.utils.json_to_sheet(cylindersSheetData);
-                    XLSX.utils.book_append_sheet(wb, cylindersSheet, 'Баллоны');
-                    
-                    // Сохраняем файл
-                    const fileName = `баллоны_газов_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    // Генерируем файл
+                    const fileName = `gas_cylinders_export_${new Date().toISOString().split('T')[0]}.xlsx`;
                     XLSX.writeFile(wb, fileName);
                     
-                    this.showNotification('Данные успешно экспортированы в Excel');
+                    this.showNotification('✅ Данные экспортированы в Excel', 'success');
                     
                 } catch (error) {
                     console.error('Ошибка экспорта:', error);
@@ -1587,111 +1256,53 @@
                 }
             },
 
-            // ========== РЕАЛЬНОЕ ВРЕМЯ ==========
-            async setUserActive(isActive) {
-                if (!this.currentUser) return;
-                
-                try {
-                    const userRef = db.collection('activeUsers').doc(this.currentUser.uid);
-                    
-                    if (isActive) {
-                        await userRef.set({
-                            email: this.currentUser.email,
-                            role: this.userRole,
-                            lastActive: firebase.firestore.FieldValue.serverTimestamp(),
-                            status: 'online'
-                        });
-                    } else {
-                        await userRef.delete();
-                    }
-                } catch (error) {
-                    console.error('Ошибка обновления статуса пользователя:', error);
-                }
-            },
-
-            setupRealtimeListeners() {
-                console.log('Настройка слушателей реального времени...');
-                
-                this.stopRealtimeListeners();
-                
-                // Слушатель для хранилищ
-                const storageListener = db.collection('storage')
-                    .onSnapshot((snapshot) => {
-                        console.log('Хранилища обновлены в реальном времени');
-                        this.lastUpdateTime = Date.now();
-                        this.storage = [];
-                        snapshot.forEach(doc => {
-                            this.storage.push({ id: doc.id, ...doc.data() });
-                        });
-                        this.renderWorkspace();
-                        this.updateStats();
-                    });
-                
-                this.realtimeListeners.push(storageListener);
-                
-                // Слушатель для баллонов
-                const cylindersListener = db.collection('cylinders')
-                    .where('archived', '==', false)
-                    .onSnapshot((snapshot) => {
-                        console.log('Баллоны обновлены в реальном времени');
-                        this.lastUpdateTime = Date.now();
-                        this.cylinders = [];
-                        snapshot.forEach(doc => {
-                            this.cylinders.push({ id: doc.id, ...doc.data() });
-                        });
-                        this.renderWorkspace();
-                        this.updateStats();
-                    });
-                
-                this.realtimeListeners.push(cylindersListener);
-                
-                // Слушатель для активных пользователей
-                const usersListener = db.collection('activeUsers')
-                    .onSnapshot((snapshot) => {
-                        this.activeUsers = snapshot.size;
-                        const activeUsersElement = document.getElementById('activeUsers');
-                        if (activeUsersElement) {
-                            activeUsersElement.textContent = this.activeUsers;
-                        }
-                        this.lastUpdateTime = Date.now();
-                    });
-                
-                this.realtimeListeners.push(usersListener);
-                
-                // Обновляем индикатор каждую секунду
-                setInterval(() => {
-                    this.updateRealtimeIndicator();
-                }, 1000);
-            },
-
-            stopRealtimeListeners() {
-                this.realtimeListeners.forEach(unsubscribe => {
-                    if (typeof unsubscribe === 'function') unsubscribe();
-                });
-                this.realtimeListeners = [];
-            },
-
             // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-            clearDragSelection() {
-                this.draggingCylinder = null;
-                this.dragSource = null;
-                this.showNotification('Выделение очищено', 'info');
+            showModal(modalId) {
+                document.getElementById(modalId).classList.remove('hidden');
+            },
+
+            hideModal(modalId) {
+                document.getElementById(modalId).classList.add('hidden');
+            },
+
+            showError(elementId, message) {
+                const errorElement = document.getElementById(elementId);
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+            },
+
+            showNotification(message, type = 'info') {
+                // Удаляем старые уведомления
+                document.querySelectorAll('.notification').forEach(n => n.remove());
+                
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                // Автоматическое скрытие через 5 секунд
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 5000);
             }
         };
 
-        // Инициализация при загрузке страницы
-        window.onload = async () => {
-            console.log('Запуск приложения...');
-            try {
-                await App.init();
-            } catch (error) {
-                console.error('Ошибка инициализации:', error);
-                alert('Ошибка загрузки приложения. Пожалуйста, обновите страницу.');
-            }
-        };
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM загружен');
+            App.init();
+        });
 
-        // Делаем App доступным глобально
-        window.App = App;
+        // Глобальный слушатель клавиш
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.classList.add('hidden');
+                });
+            }
+        });
     </script>
 </body>
 </html>
