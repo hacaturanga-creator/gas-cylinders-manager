@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление баллонами - Offline версия</title>
+    <style>
+        /* Все стили из первой версии */
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS для Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    <!-- JSZip для архивации -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- FileSaver для скачивания -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Весь интерфейс из первой версии -->
+        
+        <!-- Добавляем кнопки экспорта -->
+        <div class="sidebar-section">
+            <h3><i class="fas fa-file-export"></i> Экспорт данных</h3>
+            <button id="exportExcelBtn" class="btn btn-block">
+                <i class="fas fa-file-excel"></i> Экспорт в Excel
+            </button>
+            <button id="exportPDFBtn" class="btn btn-block">
+                <i class="fas fa-file-pdf"></i> Экспорт в PDF
+            </button>
+            <button id="exportJSONBtn" class="btn btn-block">
+                <i class="fas fa-file-code"></i> Экспорт в JSON
+            </button>
+            <button id="backupDataBtn" class="btn btn-block">
+                <i class="fas fa-save"></i> Скачать резервную копию
+            </button>
+            <button id="restoreDataBtn" class="btn btn-block">
+                <i class="fas fa-upload"></i> Загрузить данные
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const App = {
+            data: {
+                cylinders: [],
+                storage: [],
+                logs: [],
+                currentUser: null,
+                version: "1.0.0"
+            },
+
+            init() {
+                this.loadFromLocalStorage();
+                this.setupEventListeners();
+                this.setupAutoSave();
+                this.showApp();
+            },
+
+            // Экспорт в Excel (используем SheetJS)
+            exportToExcel() {
+                try {
+                    // Создаем новую рабочую книгу
+                    const wb = XLSX.utils.book_new();
+                    
+                    // 1. Лист с баллонами
+                    const cylindersData = this.data.cylinders.map(cyl => ({
+                        'Номер': cyl.number,
+                        'Тип газа': cyl.gasType,
+                        'Статус': cyl.status,
+                        'Дата проверки': cyl.lastCheckDate,
+                        'Объем (л)': cyl.volume || '',
+                        'Дата изготовления': cyl.manufactureDate || '',
+                        'Хранилище': this.getStorageName(cyl.storageId),
+                        'Позиция': cyl.position || '',
+                        'Примечания': cyl.notes || '',
+                        'Дата создания': new Date(cyl.createdAt).toLocaleString()
+                    }));
+                    
+                    const wsCylinders = XLSX.utils.json_to_sheet(cylindersData);
+                    XLSX.utils.book_append_sheet(wb, wsCylinders, "Баллоны");
+                    
+                    // 2. Лист с хранилищами
+                    const storageData = this.data.storage.map(st => ({
+                        'Название': st.name,
+                        'Тип': st.type,
+                        'Вместимость': st.capacity,
+                        'Местоположение': st.location || '',
+                        'Отдел': st.department || '',
+                        'Координата X': st.position?.x || '',
+                        'Координата Y': st.position?.y || '',
+                        'Занято мест': this.getOccupiedCount(st.id),
+                        'Свободно мест': st.capacity - this.getOccupiedCount(st.id),
+                        'Дата создания': new Date(st.createdAt).toLocaleString()
+                    }));
+                    
+                    const wsStorage = XLSX.utils.json_to_sheet(storageData);
+                    XLSX.utils.book_append_sheet(wb, wsStorage, "Хранилища");
+                    
+                    // 3. Лист со статистикой
+                    const stats = this.getStats();
+                    const statsData = [
+                        ['ОТЧЕТ ПО БАЛЛОНАМ С ГАЗАМИ'],
+                        ['Дата формирования:', new Date().toLocaleString()],
+                        ['Пользователь:', this.data.currentUser?.username || 'Неизвестно'],
+                        [''],
+                        ['ОБЩАЯ СТАТИСТИКА'],
+                        ['Всего баллонов:', stats.totalCylinders],
+                        ['Полные баллоны:', stats.fullCylinders],
+                        ['Пустые баллоны:', stats.emptyCylinders],
+                        ['На проверке:', stats.inspectionCylinders || 0],
+                        ['Всего хранилищ:', stats.totalStorage],
+                        [''],
+                        ['РАСПРЕДЕЛЕНИЕ ПО ТИПАМ ГАЗА'],
+                        ...Object.entries(stats.gasTypeDistribution || {}).map(([gas, count]) => [gas, count]),
+                        [''],
+                        ['РАСПРЕДЕЛЕНИЕ ПО ХРАНИЛИЩАМ'],
+                        ...this.data.storage.map(st => [
+                            st.name,
+                            `${this.getOccupiedCount(st.id)}/${st.capacity} мест`
+                        ])
+                    ];
+                    
+                    const wsStats = XLSX.utils.aoa_to_sheet(statsData);
+                    XLSX.utils.book_append_sheet(wb, wsStats, "Статистика");
+                    
+                    // 4. Лист с журналом действий (последние 100 записей)
+                    const logsData = this.data.logs.slice(0, 100).map(log => ({
+                        'Дата и время': new Date(log.timestamp).toLocaleString(),
+                        'Пользователь': log.user,
+                        'Действие': log.action,
+                        'Детали': log.details ? JSON.stringify(log.details) : ''
+                    }));
+                    
+                    if (logsData.length > 0) {
+                        const wsLogs = XLSX.utils.json_to_sheet(logsData);
+                        XLSX.utils.book_append_sheet(wb, wsLogs, "Журнал действий");
+                    }
+                    
+                    // Настраиваем ширину столбцов
+                    const wsCylindersCols = [
+                        {wch: 15}, // Номер
+                        {wch: 12}, // Тип газа
+                        {wch: 12}, // Статус
+                        {wch: 15}, // Дата проверки
+                        {wch: 10}, // Объем
+                        {wch: 15}, // Дата изготовления
+                        {wch: 20}, // Хранилище
+                        {wch: 10}, // Позиция
+                        {wch: 30}, // Примечания
+                        {wch: 20}  // Дата создания
+                    ];
+                    wsCylinders['!cols'] = wsCylindersCols;
+                    
+                    // Генерируем и скачиваем файл
+                    const fileName = `баллоны_отчет_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    XLSX.writeFile(wb, fileName);
+                    
+                    this.addLog(`Экспортирован отчет в Excel: ${fileName}`);
+                    this.showNotification('Excel файл успешно скачан', 'success');
+                    
+                } catch (error) {
+                    console.error('Ошибка экспорта в Excel:', error);
+                    this.showNotification('Ошибка при создании Excel файла', 'error');
+                }
+            },
+
+            // Экспорт в PDF (используем браузерную печать)
+            exportToPDF() {
+                const printContent = this.generatePrintContent();
+                
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Отчет по баллонам</title>
+                        <meta charset="UTF-8">
+                        <style>
+                            @media print {
+                                @page { margin: 1cm; }
+                                body { font-family: Arial, sans-serif; font-size: 12pt; }
+                            }
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                            h1 { color: #2c3e50; margin: 0; }
+                            h2 { color: #3498db; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+                            .section { margin-bottom: 30px; }
+                            table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                            th { background-color: #f2f2f2; text-align: left; padding: 10px; border: 1px solid #ddd; font-weight: bold; }
+                            td { padding: 8px 10px; border: 1px solid #ddd; }
+                            .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+                            .stat-card { background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #3498db; }
+                            .footer { margin-top: 50px; font-size: 11pt; color: #666; text-align: center; }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent}
+                        <script>
+                            setTimeout(() => {
+                                window.print();
+                                setTimeout(() => window.close(), 1000);
+                            }, 500);
+                        <\/script>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            },
+
+            generatePrintContent() {
+                const stats = this.getStats();
+                
+                return `
+                    <div class="header">
+                        <h1>ОТЧЕТ ПО СИСТЕМЕ УПРАВЛЕНИЯ БАЛЛОНАМИ</h1>
+                        <p>Дата формирования: ${new Date().toLocaleString()}</p>
+                        <p>Пользователь: ${this.data.currentUser?.username || 'Неизвестно'}</p>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>СТАТИСТИКА</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>${stats.totalCylinders}</h3>
+                                <p>Всего баллонов</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${stats.fullCylinders}</h3>
+                                <p>Полных баллонов</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${stats.emptyCylinders}</h3>
+                                <p>Пустых баллонов</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${stats.totalStorage}</h3>
+                                <p>Хранилищ</p>
+                            </div>
+                        </div>
+                        
+                        <h3>Распределение по типам газа:</h3>
+                        <ul>
+                            ${Object.entries(stats.gasTypeDistribution || {}).map(([gas, count]) => 
+                                `<li>${gas}: ${count} баллонов</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>СПИСОК БАЛЛОНОВ</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>№</th>
+                                    <th>Номер</th>
+                                    <th>Тип газа</th>
+                                    <th>Статус</th>
+                                    <th>Хранилище</th>
+                                    <th>Дата проверки</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${this.data.cylinders.slice(0, 100).map((cyl, index) => `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${cyl.number}</td>
+                                        <td>${cyl.gasType}</td>
+                                        <td>${cyl.status}</td>
+                                        <td>${this.getStorageName(cyl.storageId) || 'Не размещен'}</td>
+                                        <td>${cyl.lastCheckDate || ''}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        ${this.data.cylinders.length > 100 ? 
+                            `<p>Показано 100 из ${this.data.cylinders.length} баллонов</p>` : ''}
+                    </div>
+                    
+                    <div class="section">
+                        <h2>ХРАНИЛИЩА</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Тип</th>
+                                    <th>Вместимость</th>
+                                    <th>Занято/Свободно</th>
+                                    <th>Местоположение</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${this.data.storage.map(st => `
+                                    <tr>
+                                        <td>${st.name}</td>
+                                        <td>${st.type}</td>
+                                        <td>${st.capacity}</td>
+                                        <td>${this.getOccupiedCount(st.id)}/${st.capacity}</td>
+                                        <td>${st.location || 'Не указано'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>Отчет сгенерирован системой управления баллонами</p>
+                        <p>Версия: ${this.data.version} • Всего записей в базе: ${this.data.cylinders.length + this.data.storage.length}</p>
+                    </div>
+                `;
+            },
+
+            // Создание резервной копии (ZIP архив)
+            async createBackup() {
+                try {
+                    const zip = new JSZip();
+                    
+                    // 1. Основные данные
+                    const data = {
+                        version: this.data.version,
+                        exportDate: new Date().toISOString(),
+                        cylinders: this.data.cylinders,
+                        storage: this.data.storage,
+                        users: this.data.users,
+                        logs: this.data.logs.slice(0, 1000)
+                    };
+                    
+                    zip.file("data.json", JSON.stringify(data, null, 2));
+                    
+                    // 2. Excel отчет
+                    const wb = XLSX.utils.book_new();
+                    const ws = XLSX.utils.json_to_sheet(this.data.cylinders);
+                    XLSX.utils.book_append_sheet(wb, ws, "Баллоны");
+                    const excelData = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                    zip.file("backup.xlsx", excelData);
+                    
+                    // 3. Текстовый отчет
+                    zip.file("readme.txt", this.generateReadmeContent());
+                    
+                    // 4. Статистика
+                    const stats = this.getStats();
+                    zip.file("статистика.txt", `
+Резервная копия системы управления баллонами
+============================================
+
+Дата создания: ${new Date().toLocaleString()}
+Пользователь: ${this.data.currentUser?.username || 'Неизвестно'}
+Версия данных: ${this.data.version}
+
+Статистика:
+-----------
+• Баллонов: ${stats.totalCylinders}
+• Полных: ${stats.fullCylinders}
+• Пустых: ${stats.emptyCylinders}
+• Хранилищ: ${stats.totalStorage}
+• Журнальных записей: ${this.data.logs.length}
+
+Для восстановления загрузите файл data.json через интерфейс программы.
+                    `);
+                    
+                    // Генерируем и скачиваем архив
+                    const content = await zip.generateAsync({type: "blob"});
+                    const fileName = `баллоны_резервная_копия_${new Date().toISOString().split('T')[0]}.zip`;
+                    saveAs(content, fileName);
+                    
+                    this.addLog(`Создана резервная копия: ${fileName}`);
+                    this.showNotification('Резервная копия успешно создана', 'success');
+                    
+                } catch (error) {
+                    console.error('Ошибка создания резервной копии:', error);
+                    this.showNotification('Ошибка при создании резервной копии', 'error');
+                }
+            },
+
+            // Восстановление из файла
+            restoreFromFile(file) {
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        // Проверяем версию данных
+                        if (!data.version || !data.cylinders) {
+                            throw new Error('Неверный формат файла');
+                        }
+                        
+                        // Восстанавливаем данные
+                        this.data.cylinders = data.cylinders || [];
+                        this.data.storage = data.storage || [];
+                        this.data.users = data.users || [];
+                        this.data.logs = data.logs || [];
+                        
+                        // Сохраняем
+                        this.saveToLocalStorage();
+                        
+                        // Обновляем интерфейс
+                        this.renderWorkspace();
+                        this.updateStats();
+                        
+                        this.addLog(`Восстановлены данные из резервной копии от ${data.exportDate || 'неизвестной даты'}`);
+                        this.showNotification('Данные успешно восстановлены', 'success');
+                        
+                    } catch (error) {
+                        console.error('Ошибка восстановления:', error);
+                        this.showNotification('Ошибка при восстановлении данных: ' + error.message, 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            },
+
+            // Уведомления
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: bold;
+                    z-index: 9999;
+                    animation: slideIn 0.3s ease-out;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    background-color: ${type === 'success' ? '#4CAF50' : 
+                                     type === 'error' ? '#f44336' : 
+                                     '#2196F3'};
+                `;
+                
+                notification.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                       type === 'error' ? 'exclamation-circle' : 
+                                       'info-circle'}"></i>
+                    <span style="margin-left: 10px;">${message}</span>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
+            },
+
+            setupEventListeners() {
+                // Существующие обработчики...
+                
+                // Новые обработчики экспорта
+                document.getElementById('exportExcelBtn').addEventListener('click', () => {
+                    this.exportToExcel();
+                });
+                
+                document.getElementById('exportPDFBtn').addEventListener('click', () => {
+                    this.exportToPDF();
+                });
+                
+                document.getElementById('exportJSONBtn').addEventListener('click', () => {
+                    this.exportToJSON();
+                });
+                
+                document.getElementById('backupDataBtn').addEventListener('click', () => {
+                    this.createBackup();
+                });
+                
+                document.getElementById('restoreDataBtn').addEventListener('click', () => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.json,.zip';
+                    input.onchange = (e) => {
+                        if (e.target.files[0]) {
+                            this.restoreFromFile(e.target.files[0]);
+                        }
+                    };
+                    input.click();
+                });
+            },
+
+            // Автосохранение
+            setupAutoSave() {
+                setInterval(() => {
+                    this.saveToLocalStorage();
+                    this.showNotification('Автосохранение выполнено', 'info');
+                }, 60000); // Каждую минуту
+            }
+        };
+
+        // Инициализация
+        window.addEventListener('DOMContentLoaded', () => {
+            App.init();
+        });
+    </script>
+</body>
+</html>
