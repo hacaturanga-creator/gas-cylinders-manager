@@ -70,7 +70,7 @@
             to { opacity: 0; transform: translateX(100%); }
         }
 
-        /* Стили для кнопок */
+        /* Кнопки */
         .btn {
             padding: 10px 20px;
             border: none;
@@ -347,10 +347,10 @@
             font-weight: 600;
         }
 
-        /* Сетка хранилищ */
+        /* Сетка хранилищ - УМЕНЬШЕНА на 1/4 */
         .storage-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
             gap: 20px;
             padding: 20px;
         }
@@ -374,6 +374,34 @@
             border-color: #667eea;
         }
 
+        /* Стили для разных типов хранилищ */
+        .storage-card[data-type="Кабинет"] {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-left: 4px solid #3498db;
+        }
+
+        .storage-card[data-type="Шкаф"] {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-left: 4px solid #f39c12;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.15);
+        }
+
+        .storage-card[data-type="Склад"] {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 4px solid #2ecc71;
+        }
+
+        .storage-card[data-type="Клеть"] {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+            border-left: 4px solid #9b59b6;
+        }
+
+        /* Эффект при наведении для шкафов */
+        .storage-card[data-type="Шкаф"]:hover {
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.25);
+            transform: translateY(-3px) scale(1.02);
+        }
+
         .storage-card-header {
             display: flex;
             justify-content: space-between;
@@ -385,14 +413,34 @@
             font-size: 18px;
             font-weight: 600;
             color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
+        /* Бейджи для типов хранилищ с разными цветами */
         .storage-type {
             font-size: 12px;
-            background: #e0e7ff;
-            color: #667eea;
             padding: 3px 8px;
             border-radius: 12px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .storage-type[data-type="Кабинет"] {
+            background: #3498db;
+        }
+
+        .storage-type[data-type="Шкаф"] {
+            background: #f39c12;
+        }
+
+        .storage-type[data-type="Склад"] {
+            background: #2ecc71;
+        }
+
+        .storage-type[data-type="Клеть"] {
+            background: #9b59b6;
         }
 
         .storage-info {
@@ -481,7 +529,7 @@
             margin-bottom: 3px;
         }
 
-        /* Свободные баллоны */
+        /* Свободные баллоны - УМЕНЬШЕНА на 1/4 */
         .free-cylinders {
             background: white;
             border-radius: 8px;
@@ -499,7 +547,7 @@
 
         .free-cylinders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
         }
 
@@ -743,7 +791,7 @@
             }
             
             .storage-grid {
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
             }
             
             .export-options-grid {
@@ -789,16 +837,6 @@
                 text-align: center;
             }
         }
-
-        /* Утилиты */
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .mt-10 { margin-top: 10px; }
-        .mt-20 { margin-top: 20px; }
-        .mb-10 { margin-bottom: 10px; }
-        .mb-20 { margin-bottom: 20px; }
-        .ml-10 { margin-left: 10px; }
-        .mr-10 { margin-right: 10px; }
     </style>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 </head>
@@ -1089,14 +1127,14 @@
             <p id="archiveCylinderInfo"></p>
             <div class="form-group">
                 <label>Причина удаления: *</label>
-                <select id="archiveReason" required>
-                    <option value="">Выберите причину</option>
-                    <option value="Списание">Списание</option>
-                    <option value="Брак">Брак</option>
-                    <option value="Утилизация">Утилизация</option>
-                    <option value="Продажа">Продажа</option>
-                    <option value="Иное">Иное</option>
-                </select>
+                    <select id="archiveReason" required>
+                        <option value="">Выберите причину</option>
+                        <option value="Списание">Списание</option>
+                        <option value="Брак">Брак</option>
+                        <option value="Утилизация">Утилизация</option>
+                        <option value="Продажа">Продажа</option>
+                        <option value="Иное">Иное</option>
+                    </select>
             </div>
             <div class="form-group">
                 <label>Комментарий:</label>
@@ -1734,11 +1772,20 @@
                         element.style.top = (storage.posY || 0) + 'px';
                     }
                     
+                    // Добавляем иконки для разных типов хранилищ
+                    let icon = '📁';
+                    switch(storage.type) {
+                        case 'Кабинет': icon = '🏢'; break;
+                        case 'Шкаф': icon = '🗄️'; break;
+                        case 'Склад': icon = '🏭'; break;
+                        case 'Клеть': icon = '🔒'; break;
+                    }
+                    
                     element.innerHTML = `
                         <div class="storage-card-header">
                             <div>
-                                <div class="storage-name">${storage.name}</div>
-                                <div class="storage-type">${storage.type}</div>
+                                <div class="storage-name">${icon} ${storage.name}</div>
+                                <div class="storage-type" data-type="${storage.type}">${storage.type}</div>
                             </div>
                             <div>
                                 ${this.userRole === 'admin' ? `
