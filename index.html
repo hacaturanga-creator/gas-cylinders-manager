@@ -54,70 +54,103 @@
         .workspace-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         
         /* Хранилища */
-        .storage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-        .storage-item { background: white; border: 2px solid #3498db; border-radius: 8px; padding: 15px; }
-        .storage-item.closet { border-color: #9b59b6; }
+        .storage-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* было 300px */
+    gap: 15px; /* было 20px */
+    align-items: start; /* выравниваем по верху */
+}
+        .storage-item { 
+    background: white; 
+    border: 2px solid #3498db; 
+    border-radius: 8px; 
+    padding: 12px; /* уменьшаем padding */
+    min-height: auto; /* убираем фиксированную высоту */
+    height: auto; /* высота по содержимому */
+    display: flex;
+    flex-direction: column; }
+        .storage-item.closet { 
+    border-color: #9b59b6; 
+}
         .storage-item.drag-over { background: #e3f2fd; border-color: #3498db; border-style: dashed; }
-        .storage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .storage-item > div:not(.storage-header):not(.slots-grid) {
+    flex-shrink: 0; /* фиксируем размер */
+    margin-bottom: 8px;
+    font-size: 13px; /* уменьшаем шрифт */
+    color: #666;
+    line-height: 1.4;
+}
+        .storage-item > div:first-of-type:not(.storage-header) {
+    font-size: 12px;
+    margin-bottom: 6px;
+        .storage-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-start; /* меняем на flex-start */
+    margin-bottom: 10px; 
+    padding-bottom: 8px; /* уменьшаем */
+    border-bottom: 1px solid #eee; 
+    flex-shrink: 0; /* чтобы заголовок не сжимался */
+}
         .storage-header h4 { color: #2c3e50; }
         
         /* Слоты */
-        .slots-grid { 
+ .slots-grid { 
     display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* было 120px */
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* было 120px */
     gap: 8px; /* уменьшаем отступы между слотами */
     margin-top: 8px; 
+    flex-grow: 1; /* чтобы слоты занимали доступное пространство */
+    min-height: 0; /* важно для flex-контейнера */
 }
-        .slot { 
-    min-height: 80px; /* минимальная высота */
+   .slot { 
+    min-height: 60px; /* минимальная высота для пустых слотов */
     height: auto; /* автоматическая высота */
     border: 2px dashed #ddd; 
     border-radius: 6px; 
     display: flex; 
-    flex-direction: column; /* выстраиваем элементы в колонку */
-    justify-content: center; /* по центру вертикально */
+    flex-direction: column; 
+    justify-content: center; 
     cursor: pointer; 
     position: relative; 
     background: #f8f9fa; 
     transition: all 0.3s ease; 
     overflow: hidden;
 }
-        /* Строка 113 - заменяем текущий стиль .slot */
-.slot { 
-    min-height: 80px; /* минимальная высота */
-    height: auto; /* автоматическая высота */
-    border: 2px dashed #ddd; 
-    border-radius: 6px; 
-    display: flex; 
-    flex-direction: column; /* выстраиваем элементы в колонку */
-    justify-content: center; /* по центру вертикально */
-    cursor: pointer; 
-    position: relative; 
-    background: #f8f9fa; 
-    transition: all 0.3s ease; 
-    overflow: hidden;
-}
-
 /* Специальные стили для пустых слотов */
 .slot.empty { 
-    height: 80px; /* фиксированная высота */
+    height: 60px; /* фиксированная высота */
     align-items: center;
-}
 
-/* Стили для заполненных слотов */
 .slot:not(.empty) { 
-    min-height: 120px; /* минимальная высота при заполнении */
-    justify-content: flex-start; /* выравнивание по верху */
-    padding: 6px; /* внутренние отступы */
-    align-items: stretch; /* растягиваем содержимое */
+    min-height: 100px; /* минимальная высота при заполнении */
+    justify-content: flex-start; 
+    padding: 5px;
+    align-items: stretch;
+}
+    /* Можно добавить переключатель компактного режима */
+.storage-item.compact .slots-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 6px;
 }
 
-/* Компактные стили для баллонов в слотах */
+.storage-item.compact .slot.empty {
+    height: 50px;
+}
+
+.storage-item.compact .slot:not(.empty) {
+    min-height: 90px;
+}
+
+.storage-item.compact > div:not(.storage-header):not(.slots-grid) {
+    font-size: 11px;
+}
+
 .slot:not(.empty) .cylinder {
-    height: 100%; /* заполняем весь слот */
-    padding: 6px;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    padding: 5px;
 }
 
 .slot:not(.empty) .cylinder-header {
@@ -126,35 +159,41 @@
 
 .slot:not(.empty) .cylinder-number {
     font-size: 10px;
-    font-weight: bold;
-}
+    line-height: 1.2;
 
 .slot:not(.empty) .cylinder-status {
     font-size: 9px;
     padding: 1px 4px;
+    border-radius: 8px;
 }
 
 .slot:not(.empty) .cylinder-gas {
     font-size: 9px;
     margin-bottom: 2px;
+    line-height: 1.2;
 }
 
 .slot:not(.empty) .cylinder-details {
     font-size: 8px;
     line-height: 1.2;
     flex-grow: 1; /* занимает доступное пространство */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .slot:not(.empty) .cylinder-actions {
     margin-top: 4px;
     display: flex;
     gap: 2px;
+    flex-shrink: 0; /* чтобы кнопки не сжимались */
 }
 
 .slot:not(.empty) .cylinder-actions button {
     padding: 2px 3px;
     font-size: 8px;
     flex: 1;
+    line-height: 1;
 }
         .slot.empty:hover { border-color: #3498db; background: #e3f2fd; }
         .slot.empty::after { content: '+'; font-size: 24px; color: #ddd; }
@@ -187,8 +226,25 @@
         /* Свободные баллоны */
         .free-cylinders { background: white; border: 2px solid #f39c12; border-radius: 8px; padding: 15px; margin-top: 30px; }
         .free-cylinders.drag-over { background: #fef5e7; border-color: #f39c12; border-style: dashed; }
-        .free-cylinders-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; min-height: 100px; }
-        .free-cylinder { min-width: 180px; background: white; padding: 10px; border-radius: 6px; border-left: 4px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; }
+        .free-cylinders-grid { 
+    display: flex; 
+    flex-wrap: wrap; 
+    gap: 8px; /* уменьшаем отступы */
+    margin-top: 10px; 
+    min-height: 60px; /* минимальная высота зоны */
+}
+        .free-cylinder { 
+    min-width: 140px; /* было 180px */
+    max-width: 200px; /* ограничиваем максимальную ширину */
+    background: white; 
+    padding: 8px; /* уменьшаем отступы */
+    border-radius: 6px; 
+    border-left: 4px solid; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* уменьшаем тень */
+    cursor: grab; 
+    flex: 1; /* гибкая ширина */
+    min-height: 60px; /* минимальная высота */
+}
         .free-cylinder:active { cursor: grabbing; }
         
         /* Архив */
