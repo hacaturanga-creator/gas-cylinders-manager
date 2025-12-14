@@ -4544,6 +4544,7 @@ async toggleUserRole(userId, currentRole) {
     }
 }, // ← КОНЕЦ toggleUserRole
 
+
 // 57. Метод clearDragSelection
 clearDragSelection() {
     this.draggingCylinder = null;
@@ -4561,21 +4562,21 @@ clearDragSelection() {
     this.showNotification('Выделение очищено', 'info');
 } // ← КОНЕЦ clearDragSelection (последний метод!)
             
-    
+}; // ← ЗАКРЫВАЕМ ОБЪЕКТ App (ВАЖНО!)
 
-        // Инициализация при загрузке страницы
-        window.onload = async () => {
-            console.log('Запуск приложения...');
-            try {
-                await App.init();
-            } catch (error) {
-                console.error('Ошибка инициализации:', error);
-                alert('Ошибка загрузки приложения. Пожалуйста, обновите страницу.');
-            }
-        };
+// Инициализация при загрузке страницы
+window.onload = async () => {
+    console.log('Запуск приложения...');
+    try {
+        await App.init();
+    } catch (error) {
+        console.error('Ошибка инициализации:', error);
+        alert('Ошибка загрузки приложения. Пожалуйста, обновите страницу.');
+    }
+};
 
-        // Делаем App доступным глобально
-        window.App = App;
+// Делаем App доступным глобально
+window.App = App;
     </script>
 </body>
 </html>
