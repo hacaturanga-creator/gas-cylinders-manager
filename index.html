@@ -104,9 +104,9 @@
     min-height: 0; /* важно для flex-контейнера */
 }
    .slot { 
-    min-height: 60px; /* минимальная высота для пустых слотов */
-    height: auto; /* автоматическая высота */
-    border: 2px dashed #ddd; 
+    min-height: 60px;
+    height: auto;
+    border: 2px solid #e0e0e0; /* меняем dashed на solid и делаем темнее */
     border-radius: 6px; 
     display: flex; 
     flex-direction: column; 
@@ -119,14 +119,53 @@
 }
 /* Специальные стили для пустых слотов */
 .slot.empty { 
-    height: 60px; /* фиксированная высота */
+    height: 60px;
     align-items: center;
-
+    border: 2px dashed #bdc3c7; /* делаем более заметную пунктирную границу */
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+.slot.empty:hover { 
+    border-color: #3498db; 
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
 .slot:not(.empty) { 
-    min-height: 100px; /* минимальная высота при заполнении */
+    min-height: 100px;
     justify-content: flex-start; 
     padding: 5px;
     align-items: stretch;
+    border: 2px solid #d5dbdb; /* сплошная граница для заполненных */
+    background: white; /* белый фон для заполненных */
+}
+            /* Делаем плюсик более заметным */
+.slot.empty::after { 
+    content: '+'; 
+    font-size: 24px; /* увеличиваем */
+    color: #95a5a6; /* делаем темнее */
+    font-weight: 300;
+}
+
+.slot.empty:hover::after {
+    color: #3498db;
+    transform: scale(1.2);
+    transition: transform 0.2s;
+}
+
+/* Добавляем подсказку в пустых слотах */
+.slot.empty::before {
+    content: 'Добавить баллон';
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9px;
+    color: #95a5a6;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.slot.empty:hover::before {
+    opacity: 1;
 }
     /* Можно добавить переключатель компактного режима */
 .storage-item.compact .slots-grid {
@@ -147,11 +186,20 @@
 }
 
 .slot:not(.empty) .cylinder {
+    width: 100%;
     height: 100%;
+    background: white;
+    border-radius: 4px;
+    padding: 8px; /* увеличиваем немного padding */
+    border-left: 4px solid; /* левая граница по типу газа */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* добавляем тень */
+    cursor: grab;
+    user-select: none;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    padding: 5px;
 }
+
 
 .slot:not(.empty) .cylinder-header {
     margin-bottom: 3px;
