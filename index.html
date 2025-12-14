@@ -3137,7 +3137,7 @@ async quickExportExcel() {
         // Создаем книгу Excel
         const wb = XLSX.utils.book_new();
         
-        // Лист с баллонами
+        // ===== 1. ЛИСТ С АКТИВНЫМИ БАЛЛОНАМИ =====
         const cylindersSheetData = data.cylinders.map(cylinder => ({
             'Номер': cylinder.number,
             'Тип газа': cylinder.gasType,
@@ -3151,36 +3151,95 @@ async quickExportExcel() {
             'Поставщик': cylinder.supplier,
             'Место хранения': cylinder.storageId ? 
                 this.storage.find(s => s.id === cylinder.storageId)?.name || 'Неизвестно' : 'Свободный',
+            'Позиция в хранилище': cylinder.position !== null ? cylinder.position + 1 : '',
             'Примечание': cylinder.notes || ''
         }));
         
         const cylindersSheet = XLSX.utils.json_to_sheet(cylindersSheetData);
-        XLSX.utils.book_append_sheet(wb, cylindersSheet, 'Баллоны');
+        XLSX.utils.book_append_sheet(wb, cylindersSheet, 'Активные баллоны');
         
-        // Лист с хранилищами
+        // ===== 2. ЛИСТ С АРХИВНЫМИ БАЛЛОНАМИ =====
+        if (data.archive.length > 0) {
+            const archiveSheetData = data.archive.map(cylinder => ({
+                'Номер': cylinder.number,
+                'Тип газа': cylinder.gasType,
+                'Статус': cylinder.status,
+                'Дата поставки': cylinder.deliveryDate,
+                'Дата изготовления': cylinder.manufactureDate,
+                'Следующее освидетельствование': cylinder.nextInspectionDate,
+                'Рабочее давление (атм)': cylinder.workingPressure,
+                'Давление испытаний (атм)': cylinder.testPressure,
+                'Вместимость (л)': cylinder.capacity,
+                'Поставщик': cylinder.supplier,
+                'Причина удаления': cylinder.archiveReason || '',
+                'Дата удаления': cylinder.archivedAt ? 
+                    cylinder.archivedAt.toDate().toLocaleString('ru-RU') : '',
+                'Удалил': cylinder.archivedBy || '',
+                'Комментарий': cylinder.archiveComment || '',
+                'Примечание': cylinder.notes || ''
+            }));
+            
+            const archiveSheet = XLSX.utils.json_to_sheet(archiveSheetData);
+            XLSX.utils.book_append_sheet(wb, archiveSheet, 'Архив баллонов');
+        }
+        
+        // ===== 3. ЛИСТ С ХРАНИЛИЩАМИ =====
         const storageSheetData = data.storage.map(storage => ({
             'Название': storage.name,
             'Тип': storage.type,
             'Вместимость': storage.capacity,
+            'Занято': this.cylinders.filter(c => c.storageId === storage.id).length,
+            'Свободно': storage.capacity - this.cylinders.filter(c => c.storageId === storage.id).length,
             'Местоположение': storage.location || '',
             'Описание': storage.description || '',
             'Порядок': storage.order || 0,
-            'Дата создания': storage.createdAt ? storage.createdAt.toDate().toLocaleString('ru-RU') : ''
+            'Дата создания': storage.createdAt ? 
+                storage.createdAt.toDate().toLocaleString('ru-RU') : ''
         }));
         
         const storageSheet = XLSX.utils.json_to_sheet(storageSheetData);
         XLSX.utils.book_append_sheet(wb, storageSheet, 'Хранилища');
         
-        // Лист со статистикой
-        const statsSheetData = [data.stats];
+        // ===== 4. ЛИСТ СО СТАТИСТИКОЙ =====
+        const statsSheetData = [
+            {
+                'Всего баллонов (включая архив)': data.stats.totalCylinders,
+                'Активные баллоны': this.cylinders.length,
+                'Баллоны в архиве': data.archivedCount,
+                'Полные баллоны': data.stats.fullCylinders,
+                'Пустые баллоны': data.stats.emptyCylinders,
+                'Количество хранилищ': data.stats.storageCount,
+                'Свободные баллоны': data.freeCylinders.length,
+                'Дата экспорта': data.exportDate,
+                'Экспортировал': data.exportedBy
+            }
+        ];
+        
         const statsSheet = XLSX.utils.json_to_sheet(statsSheetData);
         XLSX.utils.book_append_sheet(wb, statsSheet, 'Статистика');
+        
+        // ===== 5. ЛИСТ СО СВОБОДНЫМИ БАЛЛОНАМИ =====
+        if (data.freeCylinders.length > 0) {
+            const freeSheetData = data.freeCylinders.map(cylinder => ({
+                'Номер': cylinder.number,
+                'Тип газа': cylinder.gasType,
+                'Статус': cylinder.status,
+                'Дата изготовления': cylinder.manufactureDate,
+                'Следующее освидетельствование': cylinder.nextInspectionDate,
+                'Вместимость (л)': cylinder.capacity,
+                'Поставщик': cylinder.supplier,
+                'Примечание': cylinder.notes || ''
+            }));
+            
+            const freeSheet = XLSX.utils.json_to_sheet(freeSheetData);
+            XLSX.utils.book_append_sheet(wb, freeSheet, 'Свободные баллоны');
+        }
         
         // Сохраняем файл
         const fileName = `баллоны_газов_${new Date().toISOString().split('T')[0]}.xlsx`;
         XLSX.writeFile(wb, fileName);
         
-        this.showNotification('Данные успешно экспортированы в Excel');
+        this.showNotification(`Данные успешно экспортированы в Excel (${data.archive.length} архивных записей)`);
         
     } catch (error) {
         console.error('Ошибка экспорта:', error);
@@ -3195,7 +3254,7 @@ async startExport() {
         
         switch(format) {
             case 'excel':
-                await this.quickExportExcel();
+                await this.exportFullExcel();
                 break;
             case 'json':
                 await this.exportToJson();
@@ -3214,35 +3273,143 @@ async startExport() {
         console.error('Ошибка экспорта:', error);
         this.showError('exportError', error.message);
     }
-}, // ← КОНЕЦ startExport
+},
 
-// 24. Метод exportToJson
-async exportToJson() {
-    const data = {
-        storage: this.storage,
-        cylinders: this.cylinders,
-        freeCylinders: this.cylinders.filter(c => !c.storageId),
-        archive: this.archivedCylinders,
-        exportInfo: {
-            date: new Date().toISOString(),
-            exportedBy: this.currentUser.email,
-            totalRecords: this.cylinders.length + this.archivedCylinders.length + this.storage.length
+// ДОБАВЬТЕ ЭТОТ МЕТОД ДЛЯ ПОЛНОГО ЭКСПОРТА
+async exportFullExcel() {
+    try {
+        // Проверяем, какие данные нужно экспортировать
+        const includeStorage = document.getElementById('exportStorage')?.checked || false;
+        const includeCylinders = document.getElementById('exportCylinders')?.checked || false;
+        const includeFreeCylinders = document.getElementById('exportFreeCylinders')?.checked || false;
+        const includeArchive = document.getElementById('exportArchive')?.checked || false;
+        const includeStats = document.getElementById('exportStats')?.checked || false;
+        
+        const wb = XLSX.utils.book_new();
+        
+        // 1. АКТИВНЫЕ БАЛЛОНЫ
+        if (includeCylinders && this.cylinders.length > 0) {
+            const cylindersData = this.cylinders.map(cylinder => ({
+                'Номер': cylinder.number,
+                'Тип газа': cylinder.gasType,
+                'Статус': cylinder.status,
+                'Дата поставки': cylinder.deliveryDate,
+                'Дата изготовления': cylinder.manufactureDate,
+                'Следующее освидетельствование': cylinder.nextInspectionDate,
+                'Рабочее давление (атм)': cylinder.workingPressure,
+                'Давление испытаний (атм)': cylinder.testPressure,
+                'Вместимость (л)': cylinder.capacity,
+                'Поставщик': cylinder.supplier,
+                'Место хранения': cylinder.storageId ? 
+                    this.storage.find(s => s.id === cylinder.storageId)?.name || 'Неизвестно' : 'Свободный',
+                'Позиция': cylinder.position !== null ? cylinder.position + 1 : '',
+                'Создал': cylinder.createdBy || '',
+                'Дата создания': cylinder.createdAt ? 
+                    cylinder.createdAt.toDate().toLocaleString('ru-RU') : '',
+                'Примечание': cylinder.notes || ''
+            }));
+            
+            const sheet = XLSX.utils.json_to_sheet(cylindersData);
+            XLSX.utils.book_append_sheet(wb, sheet, 'Активные баллоны');
         }
-    };
-    
-    const jsonStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `баллоны_газов_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    this.showNotification('Данные успешно экспортированы в JSON');
+        
+        // 2. АРХИВНЫЕ БАЛЛОНЫ
+        if (includeArchive && this.archivedCylinders.length > 0) {
+            const archiveData = this.archivedCylinders.map(cylinder => ({
+                'Номер': cylinder.number,
+                'Тип газа': cylinder.gasType,
+                'Статус': cylinder.status,
+                'Дата поставки': cylinder.deliveryDate,
+                'Дата изготовления': cylinder.manufactureDate,
+                'Следующее освидетельствование': cylinder.nextInspectionDate,
+                'Рабочее давление (атм)': cylinder.workingPressure,
+                'Давление испытаний (атм)': cylinder.testPressure,
+                'Вместимость (л)': cylinder.capacity,
+                'Поставщик': cylinder.supplier,
+                'Причина удаления': cylinder.archiveReason || '',
+                'Дата удаления': cylinder.archivedAt ? 
+                    cylinder.archivedAt.toDate().toLocaleString('ru-RU') : '',
+                'Удалил': cylinder.archivedBy || '',
+                'Комментарий': cylinder.archiveComment || '',
+                'Создал': cylinder.createdBy || '',
+                'Дата создания': cylinder.createdAt ? 
+                    cylinder.createdAt.toDate().toLocaleString('ru-RU') : '',
+                'Примечание': cylinder.notes || ''
+            }));
+            
+            const sheet = XLSX.utils.json_to_sheet(archiveData);
+            XLSX.utils.book_append_sheet(wb, sheet, 'Архив баллонов');
+        }
+        
+        // 3. ХРАНИЛИЩА
+        if (includeStorage && this.storage.length > 0) {
+            const storageData = this.storage.map(storage => ({
+                'Название': storage.name,
+                'Тип': storage.type,
+                'Вместимость': storage.capacity,
+                'Занято': this.cylinders.filter(c => c.storageId === storage.id).length,
+                'Свободно': storage.capacity - this.cylinders.filter(c => c.storageId === storage.id).length,
+                'Местоположение': storage.location || '',
+                'Описание': storage.description || '',
+                'Порядок': storage.order || 0,
+                'Создал': storage.createdBy || '',
+                'Дата создания': storage.createdAt ? 
+                    storage.createdAt.toDate().toLocaleString('ru-RU') : ''
+            }));
+            
+            const sheet = XLSX.utils.json_to_sheet(storageData);
+            XLSX.utils.book_append_sheet(wb, sheet, 'Хранилища');
+        }
+        
+        // 4. СВОБОДНЫЕ БАЛЛОНЫ
+        if (includeFreeCylinders) {
+            const freeCylinders = this.cylinders.filter(c => !c.storageId);
+            if (freeCylinders.length > 0) {
+                const freeData = freeCylinders.map(cylinder => ({
+                    'Номер': cylinder.number,
+                    'Тип газа': cylinder.gasType,
+                    'Статус': cylinder.status,
+                    'Дата изготовления': cylinder.manufactureDate,
+                    'Следующее освидетельствование': cylinder.nextInspectionDate,
+                    'Вместимость (л)': cylinder.capacity,
+                    'Поставщик': cylinder.supplier,
+                    'Примечание': cylinder.notes || ''
+                }));
+                
+                const sheet = XLSX.utils.json_to_sheet(freeData);
+                XLSX.utils.book_append_sheet(wb, sheet, 'Свободные баллоны');
+            }
+        }
+        
+        // 5. СТАТИСТИКА
+        if (includeStats) {
+            const statsData = [{
+                'Всего баллонов (включая архив)': this.cylinders.length + this.archivedCylinders.length,
+                'Активные баллоны': this.cylinders.length,
+                'Баллоны в архиве': this.archivedCylinders.length,
+                'Полные баллоны': this.cylinders.filter(c => c.status === 'Полный').length,
+                'Пустые баллоны': this.cylinders.filter(c => c.status === 'Пустой').length,
+                'Количество хранилищ': this.storage.length,
+                'Общая вместимость хранилищ': this.storage.reduce((sum, s) => sum + s.capacity, 0),
+                'Свободные баллоны': this.cylinders.filter(c => !c.storageId).length,
+                'Дата экспорта': new Date().toLocaleString('ru-RU'),
+                'Экспортировал': this.currentUser.email
+            }];
+            
+            const sheet = XLSX.utils.json_to_sheet(statsData);
+            XLSX.utils.book_append_sheet(wb, sheet, 'Статистика');
+        }
+        
+        // Сохраняем файл
+        const fileName = `баллоны_газов_полный_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+        
+        this.showNotification(`Excel файл создан успешно!`);
+        
+    } catch (error) {
+        console.error('Ошибка экспорта в Excel:', error);
+        throw error;
+    }
 }, // ← КОНЕЦ exportToJson
 
 // 25. Метод exportToCsv
