@@ -55,202 +55,157 @@
         
         /* Хранилища */
         .storage-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* было 300px */
-    gap: 15px; /* было 20px */
-    align-items: start; /* выравниваем по верху */
-}
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px; 
+            align-items: start;
+        }
+        
         .storage-item { 
-    background: white; 
-    border: 2px solid #3498db; 
-    border-radius: 8px; 
-    padding: 12px; /* уменьшаем padding */
-    min-height: auto; /* убираем фиксированную высоту */
-    height: auto; /* высота по содержимому */
-    display: flex;
-    flex-direction: column; }
+            background: white; 
+            border: 2px solid #3498db; 
+            border-radius: 8px; 
+            padding: 12px;
+            min-height: auto;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
         .storage-item.closet { 
-    border-color: #9b59b6; 
-}
-        .storage-item.drag-over { background: #e3f2fd; border-color: #3498db; border-style: dashed; }
-        .storage-item > div:not(.storage-header):not(.slots-grid) {
-    flex-shrink: 0; /* фиксируем размер */
-    margin-bottom: 8px;
-    font-size: 13px; /* уменьшаем шрифт */
-    color: #666;
-    line-height: 1.4;
-}
-        .storage-item > div:first-of-type:not(.storage-header) {
-    font-size: 12px;
-    margin-bottom: 6px;
+            border-color: #9b59b6; 
+        }
+        
+        .storage-item.drag-over { 
+            background: #e3f2fd; 
+            border-color: #3498db; 
+            border-style: dashed; 
+        }
+        
         .storage-header { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: flex-start; /* меняем на flex-start */
-    margin-bottom: 10px; 
-    padding-bottom: 8px; /* уменьшаем */
-    border-bottom: 1px solid #eee; 
-    flex-shrink: 0; /* чтобы заголовок не сжимался */
-}
-        .storage-header h4 { color: #2c3e50; }
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start;
+            margin-bottom: 10px; 
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee; 
+            flex-shrink: 0;
+        }
+        
+        .storage-header h4 { 
+            color: #2c3e50; 
+        }
         
         /* Слоты */
- .slots-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* было 120px */
-    gap: 8px; /* уменьшаем отступы между слотами */
-    margin-top: 8px; 
-    flex-grow: 1; /* чтобы слоты занимали доступное пространство */
-    min-height: 0; /* важно для flex-контейнера */
-}
-   .slot { 
-    min-height: 60px;
-    height: auto;
-    border: 2px solid #e0e0e0; /* меняем dashed на solid и делаем темнее */
-    border-radius: 6px; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: center; 
-    cursor: pointer; 
-    position: relative; 
-    background: #f8f9fa; 
-    transition: all 0.3s ease; 
-    overflow: hidden;
-}
-/* Специальные стили для пустых слотов */
-.slot.empty { 
-    height: 60px;
-    align-items: center;
-    border: 2px dashed #bdc3c7; /* делаем более заметную пунктирную границу */
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-.slot.empty:hover { 
-    border-color: #3498db; 
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-}
-.slot:not(.empty) { 
-    min-height: 100px;
-    justify-content: flex-start; 
-    padding: 5px;
-    align-items: stretch;
-    border: 2px solid #d5dbdb; /* сплошная граница для заполненных */
-    background: white; /* белый фон для заполненных */
-}
-            /* Делаем плюсик более заметным */
-.slot.empty::after { 
-    content: '+'; 
-    font-size: 24px; /* увеличиваем */
-    color: #95a5a6; /* делаем темнее */
-    font-weight: 300;
-}
-
-.slot.empty:hover::after {
-    color: #3498db;
-    transform: scale(1.2);
-    transition: transform 0.2s;
-}
-
-/* Добавляем подсказку в пустых слотах */
-.slot.empty::before {
-    content: 'Добавить баллон';
-    position: absolute;
-    bottom: 5px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 9px;
-    color: #95a5a6;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.slot.empty:hover::before {
-    opacity: 1;
-}
-    /* Можно добавить переключатель компактного режима */
-.storage-item.compact .slots-grid {
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 6px;
-}
-
-.storage-item.compact .slot.empty {
-    height: 50px;
-}
-
-.storage-item.compact .slot:not(.empty) {
-    min-height: 90px;
-}
-
-.storage-item.compact > div:not(.storage-header):not(.slots-grid) {
-    font-size: 11px;
-}
-
-.slot:not(.empty) .cylinder {
-    width: 100%;
-    height: 100%;
-    background: white;
-    border-radius: 4px;
-    padding: 8px; /* увеличиваем немного padding */
-    border-left: 4px solid; /* левая граница по типу газа */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* добавляем тень */
-    cursor: grab;
-    user-select: none;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-
-.slot:not(.empty) .cylinder-header {
-    margin-bottom: 3px;
-}
-
-.slot:not(.empty) .cylinder-number {
-    font-size: 10px;
-    line-height: 1.2;
-
-.slot:not(.empty) .cylinder-status {
-    font-size: 9px;
-    padding: 1px 4px;
-    border-radius: 8px;
-}
-
-.slot:not(.empty) .cylinder-gas {
-    font-size: 9px;
-    margin-bottom: 2px;
-    line-height: 1.2;
-}
-
-.slot:not(.empty) .cylinder-details {
-    font-size: 8px;
-    line-height: 1.2;
-    flex-grow: 1; /* занимает доступное пространство */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.slot:not(.empty) .cylinder-actions {
-    margin-top: 4px;
-    display: flex;
-    gap: 2px;
-    flex-shrink: 0; /* чтобы кнопки не сжимались */
-}
-
-.slot:not(.empty) .cylinder-actions button {
-    padding: 2px 3px;
-    font-size: 8px;
-    flex: 1;
-    line-height: 1;
-}
-        .slot.empty:hover { border-color: #3498db; background: #e3f2fd; }
-        .slot.empty::after { content: '+'; font-size: 24px; color: #ddd; }
-        .slot.drag-over { background: #d5f4e6; border-color: #27ae60; border-style: solid; }
+        .slots-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+        
+        .slot { 
+            min-height: 60px;
+            height: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            cursor: pointer; 
+            position: relative; 
+            background: #f8f9fa; 
+            transition: all 0.3s ease; 
+            overflow: hidden;
+        }
+        
+        /* Пустые слоты */
+        .slot.empty { 
+            height: 60px;
+            align-items: center;
+            border: 2px dashed #bdc3c7;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        .slot.empty:hover { 
+            border-color: #3498db; 
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        
+        /* Заполненные слоты */
+        .slot:not(.empty) { 
+            min-height: 100px;
+            justify-content: flex-start; 
+            padding: 5px;
+            align-items: stretch;
+            border: 2px solid #d5dbdb;
+            background: white;
+        }
+        
+        /* Плюсик в пустых слотах */
+        .slot.empty::after { 
+            content: '+'; 
+            font-size: 24px;
+            color: #95a5a6;
+            font-weight: 300;
+        }
+        
+        .slot.empty:hover::after {
+            color: #3498db;
+            transform: scale(1.2);
+            transition: transform 0.2s;
+        }
+        
+        /* Подсказка в пустых слотах */
+        .slot.empty::before {
+            content: 'Добавить баллон';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 9px;
+            color: #95a5a6;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .slot.empty:hover::before {
+            opacity: 1;
+        }
+        
+        .slot.drag-over { 
+            background: #d5f4e6; 
+            border-color: #27ae60; 
+            border-style: solid; 
+        }
         
         /* Баллоны */
-        .cylinder { width: 100%; height: 100%; background: white; border-radius: 6px; padding: 10px; border-left: 4px solid; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: grab; user-select: none; overflow: hidden; }
-        .cylinder:active { cursor: grabbing; }
-        .cylinder.dragging { opacity: 0.7; transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .cylinder { 
+            width: 100%; 
+            height: 100%; 
+            background: white; 
+            border-radius: 6px; 
+            padding: 10px; 
+            border-left: 4px solid; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            cursor: grab; 
+            user-select: none; 
+            overflow: hidden; 
+        }
+        
+        .cylinder:active { 
+            cursor: grabbing; 
+        }
+        
+        .cylinder.dragging { 
+            opacity: 0.7; 
+            transform: scale(1.05); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); 
+        }
+        
         .cylinder.oxygen { border-left-color: #e74c3c; }
         .cylinder.nitrogen { border-left-color: #3498db; }
         .cylinder.argon { border-left-color: #9b59b6; }
@@ -260,50 +215,192 @@
         .cylinder.methane { border-left-color: #8e44ad; }
         .cylinder.carbon-dioxide { border-left-color: #7f8c8d; }
         
-        .cylinder-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .cylinder-number { font-weight: bold; font-size: 12px; }
-        .cylinder-status { font-size: 10px; padding: 2px 6px; border-radius: 10px; }
-        .cylinder-status.full { background: #d5f4e6; color: #27ae60; }
-        .cylinder-status.empty { background: #fadbd8; color: #e74c3c; }
-        .cylinder-status.expired { background: #f8c471; color: #d35400; }
-        .cylinder-gas { font-size: 11px; color: #666; margin-bottom: 3px; }
-        .cylinder-details { font-size: 10px; color: #888; line-height: 1.3; }
-        .cylinder-actions { display: flex; gap: 3px; margin-top: 6px; }
-        .cylinder-actions button { flex: 1; padding: 3px; font-size: 10px; }
+        .cylinder-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 5px; 
+        }
+        
+        .cylinder-number { 
+            font-weight: bold; 
+            font-size: 12px; 
+        }
+        
+        .cylinder-status { 
+            font-size: 10px; 
+            padding: 2px 6px; 
+            border-radius: 10px; 
+        }
+        
+        .cylinder-status.full { 
+            background: #d5f4e6; 
+            color: #27ae60; 
+        }
+        
+        .cylinder-status.empty { 
+            background: #fadbd8; 
+            color: #e74c3c; 
+        }
+        
+        .cylinder-status.expired { 
+            background: #f8c471; 
+            color: #d35400; 
+        }
+        
+        .cylinder-gas { 
+            font-size: 11px; 
+            color: #666; 
+            margin-bottom: 3px; 
+        }
+        
+        .cylinder-details { 
+            font-size: 10px; 
+            color: #888; 
+            line-height: 1.3; 
+        }
+        
+        .cylinder-actions { 
+            display: flex; 
+            gap: 3px; 
+            margin-top: 6px; 
+        }
+        
+        .cylinder-actions button { 
+            flex: 1; 
+            padding: 3px; 
+            font-size: 10px; 
+        }
+        
+        /* Баллоны в слотах - компактный стиль */
+        .slot:not(.empty) .cylinder {
+            padding: 8px;
+        }
+        
+        .slot:not(.empty) .cylinder-header {
+            margin-bottom: 3px;
+        }
+        
+        .slot:not(.empty) .cylinder-number {
+            font-size: 10px;
+            line-height: 1.2;
+        }
+        
+        .slot:not(.empty) .cylinder-status {
+            font-size: 9px;
+            padding: 1px 4px;
+            border-radius: 8px;
+        }
+        
+        .slot:not(.empty) .cylinder-gas {
+            font-size: 9px;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+        
+        .slot:not(.empty) .cylinder-details {
+            font-size: 8px;
+            line-height: 1.2;
+        }
+        
+        .slot:not(.empty) .cylinder-actions {
+            margin-top: 4px;
+            gap: 2px;
+        }
+        
+        .slot:not(.empty) .cylinder-actions button {
+            padding: 2px 3px;
+            font-size: 8px;
+        }
         
         /* Свободные баллоны */
-        .free-cylinders { background: white; border: 2px solid #f39c12; border-radius: 8px; padding: 15px; margin-top: 30px; }
-        .free-cylinders.drag-over { background: #fef5e7; border-color: #f39c12; border-style: dashed; }
+        .free-cylinders { 
+            background: white; 
+            border: 2px solid #f39c12; 
+            border-radius: 8px; 
+            padding: 15px; 
+            margin-top: 30px; 
+        }
+        
+        .free-cylinders.drag-over { 
+            background: #fef5e7; 
+            border-color: #f39c12; 
+            border-style: dashed; 
+        }
+        
         .free-cylinders-grid { 
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 8px; /* уменьшаем отступы */
-    margin-top: 10px; 
-    min-height: 60px; /* минимальная высота зоны */
-}
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px;
+            margin-top: 10px; 
+            min-height: 60px;
+        }
+        
         .free-cylinder { 
-    min-width: 140px; /* было 180px */
-    max-width: 200px; /* ограничиваем максимальную ширину */
-    background: white; 
-    padding: 8px; /* уменьшаем отступы */
-    border-radius: 6px; 
-    border-left: 4px solid; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* уменьшаем тень */
-    cursor: grab; 
-    flex: 1; /* гибкая ширина */
-    min-height: 60px; /* минимальная высота */
-}
-        .free-cylinder:active { cursor: grabbing; }
+            min-width: 140px;
+            max-width: 200px;
+            background: white; 
+            padding: 8px;
+            border-radius: 6px; 
+            border-left: 4px solid; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: grab; 
+            flex: 1;
+            min-height: 60px;
+        }
+        
+        .free-cylinder:active { 
+            cursor: grabbing; 
+        }
         
         /* Архив */
-        .archive-section { background: white; border: 2px solid #95a5a6; border-radius: 8px; padding: 15px; margin-top: 30px; }
-        .archive-toggle { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .archive-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .archive-content.expanded { max-height: 500px; overflow-y: auto; margin-top: 15px; }
-        .archive-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .archive-table th, .archive-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .archive-table th { background: #f8f9fa; font-weight: 600; }
-        .archive-table tr:nth-child(even) { background: #f9f9f9; }
+        .archive-section { 
+            background: white; 
+            border: 2px solid #95a5a6; 
+            border-radius: 8px; 
+            padding: 15px; 
+            margin-top: 30px; 
+        }
+        
+        .archive-toggle { 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .archive-content { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: max-height 0.3s ease-out; 
+        }
+        
+        .archive-content.expanded { 
+            max-height: 500px; 
+            overflow-y: auto; 
+            margin-top: 15px; 
+        }
+        
+        .archive-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 12px; 
+        }
+        
+        .archive-table th, .archive-table td { 
+            border: 1px solid #ddd; 
+            padding: 8px; 
+            text-align: left; 
+        }
+        
+        .archive-table th { 
+            background: #f8f9fa; 
+            font-weight: 600; 
+        }
+        
+        .archive-table tr:nth-child(even) { 
+            background: #f9f9f9; 
+        }
         
         /* Индикатор реального времени */
         .realtime-indicator { 
@@ -321,9 +418,11 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             z-index: 999;
         }
+        
         .realtime-indicator.offline { 
             background: #e74c3c; 
         }
+        
         .realtime-indicator .pulse {
             width: 10px;
             height: 10px;
@@ -331,35 +430,110 @@
             background: white;
             animation: pulse 2s infinite;
         }
+        
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
         
-        .error-message { background: #fadbd8; color: #e74c3c; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 14px; }
+        .error-message { 
+            background: #fadbd8; 
+            color: #e74c3c; 
+            padding: 10px; 
+            border-radius: 6px; 
+            margin-top: 10px; 
+            font-size: 14px; 
+        }
         
-        .notification { position: fixed; top: 20px; right: 20px; background: #2ecc71; color: white; padding: 15px 20px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; }
-        .notification.error { background: #e74c3c; }
-        .notification.warning { background: #f39c12; }
-        .notification.info { background: #3498db; }
+        .notification { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: #2ecc71; 
+            color: white; 
+            padding: 15px 20px; 
+            border-radius: 6px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            z-index: 1001; 
+        }
+        
+        .notification.error { 
+            background: #e74c3c; 
+        }
+        
+        .notification.warning { 
+            background: #f39c12; 
+        }
+        
+        .notification.info { 
+            background: #3498db; 
+        }
         
         /* Дроп-зона */
-        .drop-zone { border: 2px dashed #3498db; border-radius: 8px; padding: 20px; text-align: center; background: #f8f9fa; margin-bottom: 20px; }
-        .drop-zone.drag-over { background: #e3f2fd; border-color: #2980b9; }
+        .drop-zone { 
+            border: 2px dashed #3498db; 
+            border-radius: 8px; 
+            padding: 20px; 
+            text-align: center; 
+            background: #f8f9fa; 
+            margin-bottom: 20px; 
+        }
+        
+        .drop-zone.drag-over { 
+            background: #e3f2fd; 
+            border-color: #2980b9; 
+        }
         
         /* Модальное окно экспорта */
-        .export-modal-content { max-width: 600px; }
-        .export-options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
-        .export-option { padding: 15px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; }
-        .export-option:hover { border-color: #3498db; background: #f8f9fa; }
-        .export-option.selected { border-color: #3498db; background: #e3f2fd; }
-        .export-option h4 { margin-bottom: 5px; color: #2c3e50; }
-        .export-option p { font-size: 12px; color: #666; }
+        .export-modal-content { 
+            max-width: 600px; 
+        }
+        
+        .export-options-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            margin: 20px 0; 
+        }
+        
+        .export-option { 
+            padding: 15px; 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            text-align: center; 
+            transition: all 0.3s; 
+        }
+        
+        .export-option:hover { 
+            border-color: #3498db; 
+            background: #f8f9fa; 
+        }
+        
+        .export-option.selected { 
+            border-color: #3498db; 
+            background: #e3f2fd; 
+        }
+        
+        .export-option h4 { 
+            margin-bottom: 5px; 
+            color: #2c3e50; 
+        }
+        
+        .export-option p { 
+            font-size: 12px; 
+            color: #666; 
+        }
         
         /* Админские кнопки */
-        .admin-only { display: none; }
-        .admin-only.show { display: inline-block; }
+        .admin-only { 
+            display: none; 
+        }
+        
+        .admin-only.show { 
+            display: inline-block; 
+        }
         
         /* Выбор баллона */
         .cylinder-select-modal .cylinder-option {
@@ -370,6 +544,7 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+        
         .cylinder-option:hover {
             background: #f5f5f5;
             border-color: #3498db;
@@ -382,6 +557,7 @@
             align-items: center;
             margin-bottom: 15px;
         }
+        
         .badge {
             background: #3498db;
             color: white;
