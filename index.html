@@ -59,6 +59,39 @@
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 15px; 
             align-items: start;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        /* Режим редактирования расположения */
+        .storage-grid.arrange-mode {
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            min-height: 500px;
+            background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%, 
+                        transparent 50%, #f8f9fa 50%, #f8f9fa 75%, transparent 75%, transparent);
+            background-size: 20px 20px;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .storage-grid.arrange-mode .storage-item {
+            cursor: move !important;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 10;
+        }
+        
+        .storage-grid.arrange-mode .storage-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        
+        .storage-grid.arrange-mode .storage-item.dragging {
+            opacity: 0.8;
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
         
         .storage-item { 
@@ -70,6 +103,7 @@
             height: auto;
             display: flex;
             flex-direction: column;
+            transition: all 0.3s;
         }
         
         .storage-item.closet { 
@@ -80,6 +114,23 @@
             background: #e3f2fd; 
             border-color: #3498db; 
             border-style: dashed; 
+        }
+        
+        /* Координаты на плитке */
+        .storage-item .coordinates {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(52, 152, 219, 0.9);
+            color: white;
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            display: none;
+        }
+        
+        .storage-grid.arrange-mode .storage-item .coordinates {
+            display: block;
         }
         
         .storage-header { 
@@ -565,6 +616,33 @@
             border-radius: 10px;
             font-size: 12px;
         }
+        
+        /* Кнопки управления расположением */
+        .position-controls {
+            display: flex;
+            gap: 3px;
+            margin-left: 5px;
+        }
+        
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+            display: none;
+        }
+        
+        .storage-grid.arrange-mode .grid-overlay {
+            display: block;
+        }
+        
+        .grid-cell {
+            position: absolute;
+            border: 1px dashed rgba(52, 152, 219, 0.3);
+        }
     </style>
     <!-- Библиотека для экспорта в Excel -->
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
@@ -929,6 +1007,46 @@
         </div>
     </div>
 
+    <!-- Модальное окно позиционирования хранилища -->
+    <div id="positionModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2>📐 Позиционирование хранилища</h2>
+            <p id="positionStorageName" style="font-weight: bold; margin-bottom: 20px;"></p>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Порядковый номер:</label>
+                    <input type="number" id="positionOrder" min="0" max="100" value="0">
+                    <small style="color: #666;">Чем меньше, тем раньше в списке</small>
+                </div>
+                <div class="form-group">
+                    <label>Положение в сетке:</label>
+                    <select id="gridPosition">
+                        <option value="auto">Авто</option>
+                        <option value="first">Первый</option>
+                        <option value="last">Последний</option>
+                        <option value="type">По типу</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+                <h4 style="margin-bottom: 10px;">📌 Советы по расположению:</h4>
+                <ul style="font-size: 12px; color: #666; padding-left: 20px;">
+                    <li>Используйте кнопки ⬆️/⬇️ для быстрого перемещения</li>
+                    <li>Включите режим "📐 Расположить" для перетаскивания</li>
+                    <li>Хранилища с меньшим порядковым номером показываются первыми</li>
+                </ul>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="savePositionBtn" class="btn btn-primary" style="flex: 1;">Сохранить</button>
+                <button onclick="App.hideModal('positionModal')" class="btn btn-secondary" style="flex: 1;">Отмена</button>
+            </div>
+            <div id="positionError" class="error-message hidden"></div>
+        </div>
+    </div>
+
     <!-- Модальное окно выбора пользователей -->
     <div id="usersModal" class="modal hidden">
         <div class="modal-content">
@@ -957,7 +1075,6 @@
                     <h3>Управление</h3>
                     <button id="addCylinderBtn" class="btn btn-block">+ Добавить баллон</button>
                     <button id="addStorageBtn" class="btn btn-block">+ Добавить хранилище</button>
-                    
                 </div>
 
                 <div class="sidebar-section">
@@ -979,16 +1096,18 @@
                     <button id="quickExcelBtn" class="btn btn-warning btn-block">📈 Быстрый Excel</button>
                 </div>
                 
-                <div class="sidebar-section">
-                    <h3>Режим реального времени</h3>
-                    <div style="font-size: 12px; color: #666; padding: 10px; background: #f8f9fa; border-radius: 6px;">
-                        <p>🔄 Автоматическое обновление</p>
-                        <p>👥 Все пользователи видят изменения сразу</p>
-                    </div>
-                </div>
-                
                 <div class="sidebar-section admin-only hidden" id="adminSection">
                     <h3>Администратор</h3>
+                    
+                    <div style="font-size: 12px; color: #666; padding: 10px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px;">
+                        <p><strong>Расположение хранилищ:</strong></p>
+                        <div style="display: flex; flex-direction: column; gap: 5px; margin-top: 8px;">
+                            <button class="btn btn-small" onclick="App.reorderAllStorages()">🔢 Упорядочить по алфавиту</button>
+                            <button class="btn btn-small" onclick="App.groupByType()">📦 Группировать по типам</button>
+                            <button class="btn btn-small" onclick="App.resetPositions()">🔄 Сбросить расположение</button>
+                        </div>
+                    </div>
+                    
                     <div style="font-size: 12px; color: #666; padding: 10px; background: #f8f9fa; border-radius: 6px;">
                         <p>⚙️ Доступ к редактированию хранилищ</p>
                         <p>👑 Управление пользователями</p>
@@ -1002,6 +1121,7 @@
                     <h2>Рабочая область <span class="badge" id="totalCylindersBadge">0</span></h2>
                     <div style="display: flex; gap: 10px;">
                         <button id="refreshBtn" class="btn btn-small">🔄 Обновить</button>
+                        <button id="arrangeBtn" class="btn btn-info btn-small">📐 Расположить</button>
                         <button id="clearDragBtn" class="btn btn-small">🗑️ Очистить выделение</button>
                         <button id="showArchiveBtn" class="btn btn-info btn-small">📁 Архив</button>
                     </div>
@@ -1013,6 +1133,9 @@
                     <p style="font-size: 12px; color: #666; margin-top: 5px;">или кликните на слот для добавления баллона</p>
                 </div>
 
+                <!-- Сетка для отображения координат -->
+                <div class="grid-overlay" id="gridOverlay"></div>
+                
                 <div id="storageContainer" class="storage-grid"></div>
 
                 <div id="freeCylindersContainer" class="free-cylinders hidden">
@@ -1098,6 +1221,8 @@
             cylinderToArchive: null,
             storageToEdit: null,
             editingCylinderId: null,
+            isArrangeMode: false,
+            positioningStorage: null,
 
             async init() {
                 console.log('Инициализация приложения...');
@@ -1452,8 +1577,11 @@
                 document.getElementById('manageUsersBtn').addEventListener('click', () => this.showUsersModal());
                 document.getElementById('showUsersBtn').addEventListener('click', () => this.showUsersModal());
                 
-                // Другие кнопки
+                // Управление расположением
+                document.getElementById('arrangeBtn').addEventListener('click', () => this.toggleArrangeMode());
+                document.getElementById('savePositionBtn').addEventListener('click', () => this.savePosition());
                 
+                // Другие кнопки
                 document.getElementById('refreshBtn').addEventListener('click', () => this.loadData());
                 document.getElementById('clearDragBtn').addEventListener('click', () => this.clearDragSelection());
                 
@@ -1690,13 +1818,23 @@
                     archiveContainer.classList.remove('hidden');
                 }
                 
-                this.storage.forEach(storage => {
+                // СОРТИРУЕМ ПО ПОРЯДКУ
+                const sortedStorage = [...this.storage].sort((a, b) => {
+                    return (a.order || 0) - (b.order || 0);
+                });
+                
+                sortedStorage.forEach(storage => {
                     const storageElement = this.createStorageElement(storage);
                     storageContainer.appendChild(storageElement);
                     this.setupStorageDrag(storageElement, storage.id);
                 });
                 
                 this.renderFreeCylinders();
+                
+                // Если режим редактирования - настраиваем
+                if (this.isArrangeMode) {
+                    this.setupArrangeMode();
+                }
             },
 
             createStorageElement(storage) {
@@ -1716,15 +1854,25 @@
                     return inspectionDate < today;
                 }).length;
                 
+                // Создаем кнопки управления расположением
+                const positionControls = this.userRole === 'admin' ? `
+                    <div class="position-controls">
+                        <button class="btn btn-small" onclick="event.stopPropagation(); App.positionStorage('${storage.id}')" title="Позиционировать">📍</button>
+                        <button class="btn btn-small" onclick="event.stopPropagation(); App.moveStorageUp('${storage.id}')" title="Поднять">⬆️</button>
+                        <button class="btn btn-small" onclick="event.stopPropagation(); App.moveStorageDown('${storage.id}')" title="Опустить">⬇️</button>
+                    </div>
+                ` : '';
+                
                 div.innerHTML = `
                     <div class="storage-header">
                         <h4>${storage.name} (${storage.type})</h4>
-                        <div>
+                        <div style="display: flex; align-items: center;">
+                            ${positionControls}
                             ${this.userRole === 'admin' ? 
-                                `<button class="btn btn-small admin-only" onclick="App.editStorage('${storage.id}')" title="Редактировать">✏️</button>` : 
+                                `<button class="btn btn-small admin-only" onclick="event.stopPropagation(); App.editStorage('${storage.id}')" title="Редактировать">✏️</button>` : 
                                 ''
                             }
-                            <button class="btn btn-small" onclick="App.deleteStorage('${storage.id}')">🗑️</button>
+                            <button class="btn btn-small" onclick="event.stopPropagation(); App.deleteStorage('${storage.id}')">🗑️</button>
                         </div>
                     </div>
                     <div style="margin-bottom: 10px; font-size: 14px; color: #666;">
@@ -1736,6 +1884,7 @@
                         ${storage.location || ''}
                     </div>
                     <div class="slots-grid" id="slots-${storage.id}"></div>
+                    <div class="coordinates">${storage.order || 0}</div>
                 `;
                 
                 const slotsContainer = div.querySelector(`#slots-${storage.id}`);
@@ -2297,6 +2446,7 @@
                         'Вместимость': storage.capacity,
                         'Местоположение': storage.location || '',
                         'Описание': storage.description || '',
+                        'Порядок': storage.order || 0,
                         'Дата создания': storage.createdAt ? storage.createdAt.toDate().toLocaleString('ru-RU') : ''
                     }));
                     
@@ -2457,6 +2607,7 @@
                                             <th>Вместимость</th>
                                             <th>Местоположение</th>
                                             <th>Заполнено</th>
+                                            <th>Порядок</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -2469,6 +2620,7 @@
                                                     <td>${storage.capacity}</td>
                                                     <td>${storage.location || ''}</td>
                                                     <td>${cylindersInStorage.length}/${storage.capacity}</td>
+                                                    <td>${storage.order || 0}</td>
                                                 </tr>
                                             `;
                                         }).join('')}
@@ -2799,23 +2951,6 @@
             },
 
             // ========== УПРАВЛЕНИЕ ХРАНИЛИЩАМИ ==========
-            showAddStorage() {
-                // Очищаем форму
-                const storageName = document.getElementById('storageName');
-                const storageType = document.getElementById('storageType');
-                const storageCapacity = document.getElementById('storageCapacity');
-                const storageLocation = document.getElementById('storageLocation');
-                const storageDescription = document.getElementById('storageDescription');
-                
-                if (storageName) storageName.value = '';
-                if (storageType) storageType.value = 'Кабинет';
-                if (storageCapacity) storageCapacity.value = '10';
-                if (storageLocation) storageLocation.value = '';
-                if (storageDescription) storageDescription.value = '';
-                
-                this.showModal('addStorageModal');
-            },
-
             async saveStorage() {
                 try {
                     const name = document.getElementById('storageName').value.trim();
@@ -2834,12 +2969,18 @@
                         return;
                     }
                     
+                    // Автоматически определяем порядок (последний + 1)
+                    const maxOrder = this.storage.length > 0 
+                        ? Math.max(...this.storage.map(s => s.order || 0))
+                        : 0;
+                    
                     await db.collection('storage').add({
                         name: name,
                         type: type,
                         capacity: capacity,
                         location: location,
                         description: description,
+                        order: maxOrder + 1, // ← ДОБАВИЛИ ПОРЯДОК
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                         createdBy: this.currentUser.email,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -2853,6 +2994,23 @@
                     console.error('Ошибка сохранения:', error);
                     this.showError('storageError', error.message);
                 }
+            },
+
+            showAddStorage() {
+                // Очищаем форму
+                const storageName = document.getElementById('storageName');
+                const storageType = document.getElementById('storageType');
+                const storageCapacity = document.getElementById('storageCapacity');
+                const storageLocation = document.getElementById('storageLocation');
+                const storageDescription = document.getElementById('storageDescription');
+                
+                if (storageName) storageName.value = '';
+                if (storageType) storageType.value = 'Кабинет';
+                if (storageCapacity) storageCapacity.value = '10';
+                if (storageLocation) storageLocation.value = '';
+                if (storageDescription) storageDescription.value = '';
+                
+                this.showModal('addStorageModal');
             },
 
             async editStorage(storageId) {
@@ -2924,184 +3082,454 @@
                 }
             },
 
-async deleteStorage(storageId) {
-    const storage = this.storage.find(s => s.id === storageId);
-    if (!storage) return;
-    
-    // Проверяем права для удаления
-    if (this.userRole !== 'admin') {
-        this.showNotification('Только администраторы могут удалять хранилища', 'error');
-        return;
-    }
-    
-    // ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ
-    const cylindersInStorage = this.cylinders.filter(c => c.storageId === storageId);
-    
-    let message = `Вы уверены, что хотите удалить хранилище "${storage.name}"?`;
-    
-    if (cylindersInStorage.length > 0) {
-        message = `⚠️ ВНИМАНИЕ!\n\n` +
-                  `В хранилище "${storage.name}" находится ${cylindersInStorage.length} баллонов.\n\n` +
-                  `Выберите действие:\n` +
-                  `1. УДАЛИТЬ с перемещением баллонов в свободные\n` +
-                  `2. УДАЛИТЬ ВСЕ (хранилище и баллоны)\n` +
-                  `3. Отмена`;
-    }
-    
-    // Простое подтверждение для пустых хранилищ
-    if (cylindersInStorage.length === 0) {
-        const confirmDelete = confirm(message);
-        if (!confirmDelete) return;
-    } 
-    // Диалог с выбором для непустых хранилищ
-    else {
-        const userChoice = prompt(message, "1");
-        
-        if (userChoice === null || userChoice === "3") {
-            return; // Отмена
-        }
-        
-        if (userChoice !== "1" && userChoice !== "2") {
-            this.showNotification('Неверный выбор', 'error');
-            return;
-        }
-    }
-    
-    try {
-        // Если есть баллоны и выбран вариант 1 - освобождаем их
-        if (cylindersInStorage.length > 0) {
-            const batch = db.batch();
-            cylindersInStorage.forEach(cylinder => {
-                const ref = db.collection('cylinders').doc(cylinder.id);
-                batch.update(ref, { 
-                    storageId: null, 
-                    position: null,
-                    lastMoved: firebase.firestore.FieldValue.serverTimestamp(),
-                    movedBy: this.currentUser.email,
-                    movedFrom: storage.name
-                });
-            });
-            
-            await batch.commit();
-            this.showNotification(`${cylindersInStorage.length} баллонов освобождено`);
-        }
-        
-        // Удаляем само хранилище
-        await db.collection('storage').doc(storageId).delete();
-        this.showNotification(`Хранилище "${storage.name}" удалено`);
-        
-    } catch (error) {
-        console.error('Ошибка удаления:', error);
-        this.showNotification('Ошибка удаления хранилища', 'error');
-    }
-},
-
-            // ========== ТЕСТОВЫЕ ДАННЫЕ ==========
-            async addDemoData() {
-                const confirmAdd = confirm('Добавить тестовые данные? Это добавит несколько хранилищ и баллонов для демонстрации работы системы.');
-                if (!confirmAdd) return;
+            async deleteStorage(storageId) {
+                const storage = this.storage.find(s => s.id === storageId);
+                if (!storage) return;
+                
+                // Проверяем права для удаления
+                if (this.userRole !== 'admin') {
+                    this.showNotification('Только администраторы могут удалять хранилища', 'error');
+                    return;
+                }
+                
+                // ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ
+                const cylindersInStorage = this.cylinders.filter(c => c.storageId === storageId);
+                
+                let message = `Вы уверены, что хотите удалить хранилище "${storage.name}"?`;
+                
+                if (cylindersInStorage.length > 0) {
+                    message = `⚠️ ВНИМАНИЕ!\n\n` +
+                              `В хранилище "${storage.name}" находится ${cylindersInStorage.length} баллонов.\n\n` +
+                              `Выберите действие:\n` +
+                              `1. УДАЛИТЬ с перемещением баллонов в свободные\n` +
+                              `2. УДАЛИТЬ ВСЕ (хранилище и баллоны)\n` +
+                              `3. Отмена`;
+                }
+                
+                // Простое подтверждение для пустых хранилищ
+                if (cylindersInStorage.length === 0) {
+                    const confirmDelete = confirm(message);
+                    if (!confirmDelete) return;
+                } 
+                // Диалог с выбором для непустых хранилищ
+                else {
+                    const userChoice = prompt(message, "1");
+                    
+                    if (userChoice === null || userChoice === "3") {
+                        return; // Отмена
+                    }
+                    
+                    if (userChoice !== "1" && userChoice !== "2") {
+                        this.showNotification('Неверный выбор', 'error');
+                        return;
+                    }
+                }
                 
                 try {
-                    // Добавляем тестовые хранилища
-                    const storages = [
-                        {
-                            name: 'Кабинет №1',
-                            type: 'Кабинет',
-                            capacity: 12,
-                            location: 'Цех №1, 1 этаж',
-                            description: 'Основное хранилище для кислородных баллонов'
-                        },
-                        {
-                            name: 'Шкаф №2',
-                            type: 'Шкаф',
-                            capacity: 8,
-                            location: 'Цех №2, коридор',
-                            description: 'Для азотных и аргоновых баллонов'
-                        },
-                        {
-                            name: 'Склад №3',
-                            type: 'Склад',
-                            capacity: 20,
-                            location: 'Подвал, блок А',
-                            description: 'Резервное хранилище'
-                        }
-                    ];
+                    // Если есть баллоны и выбран вариант 1 - освобождаем их
+                    if (cylindersInStorage.length > 0) {
+                        const batch = db.batch();
+                        cylindersInStorage.forEach(cylinder => {
+                            const ref = db.collection('cylinders').doc(cylinder.id);
+                            batch.update(ref, { 
+                                storageId: null, 
+                                position: null,
+                                lastMoved: firebase.firestore.FieldValue.serverTimestamp(),
+                                movedBy: this.currentUser.email,
+                                movedFrom: storage.name
+                            });
+                        });
+                        
+                        await batch.commit();
+                        this.showNotification(`${cylindersInStorage.length} баллонов освобождено`);
+                    }
                     
-                    const storagePromises = storages.map(storage => 
-                        db.collection('storage').add({
-                            ...storage,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            createdBy: this.currentUser.email,
+                    // Удаляем само хранилище
+                    await db.collection('storage').doc(storageId).delete();
+                    this.showNotification(`Хранилище "${storage.name}" удалено`);
+                    
+                } catch (error) {
+                    console.error('Ошибка удаления:', error);
+                    this.showNotification('Ошибка удаления хранилища', 'error');
+                }
+            },
+
+            // ========== УПРАВЛЕНИЕ РАСПОЛОЖЕНИЕМ ХРАНИЛИЩ ==========
+            toggleArrangeMode: function() {
+                this.isArrangeMode = !this.isArrangeMode;
+                
+                const storageContainer = document.getElementById('storageContainer');
+                const arrangeBtn = document.getElementById('arrangeBtn');
+                
+                if (storageContainer) {
+                    if (this.isArrangeMode) {
+                        storageContainer.classList.add('arrange-mode');
+                        this.setupArrangeMode();
+                        this.showNotification('🔄 Режим расположения включен. Перетаскивайте плитки хранилищ!');
+                    } else {
+                        storageContainer.classList.remove('arrange-mode');
+                        this.showNotification('Режим расположения выключен');
+                    }
+                }
+                
+                // Обновляем кнопку
+                if (arrangeBtn) {
+                    arrangeBtn.textContent = this.isArrangeMode ? '✅ Сохранить расположение' : '📐 Расположить';
+                    arrangeBtn.classList.toggle('btn-success', this.isArrangeMode);
+                    arrangeBtn.classList.toggle('btn-info', !this.isArrangeMode);
+                }
+            },
+
+            setupArrangeMode: function() {
+                const storageContainer = document.getElementById('storageContainer');
+                const storageItems = document.querySelectorAll('.storage-item');
+                
+                if (!storageContainer) return;
+                
+                storageItems.forEach(item => {
+                    // Делаем перетаскиваемым
+                    item.setAttribute('draggable', 'true');
+                    
+                    // Обработчики drag & drop для расположения
+                    item.addEventListener('dragstart', (e) => {
+                        item.classList.add('dragging');
+                        const storageId = item.dataset.storageId;
+                        e.dataTransfer.setData('text/plain', storageId);
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+                    
+                    item.addEventListener('dragend', () => {
+                        item.classList.remove('dragging');
+                    });
+                });
+                
+                // Обработка drop на сетке для переупорядочивания
+                storageContainer.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                });
+                
+                storageContainer.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    const storageId = e.dataTransfer.getData('text/plain');
+                    const draggedItem = document.querySelector(`.storage-item[data-storage-id="${storageId}"]`);
+                    
+                    if (!draggedItem) return;
+                    
+                    // Находим ближайший элемент к точке drop
+                    const afterElement = this.getDragAfterElement(storageContainer, e.clientY);
+                    
+                    if (afterElement) {
+                        storageContainer.insertBefore(draggedItem, afterElement);
+                    } else {
+                        storageContainer.appendChild(draggedItem);
+                    }
+                    
+                    // Обновляем порядок всех элементов
+                    await this.updateAllStorageOrders();
+                });
+            },
+
+            getDragAfterElement: function(container, y) {
+                const draggableElements = [...container.querySelectorAll('.storage-item:not(.dragging)')];
+                
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            },
+
+            async updateAllStorageOrders() {
+                try {
+                    const storageContainer = document.getElementById('storageContainer');
+                    const storageItems = storageContainer.querySelectorAll('.storage-item');
+                    
+                    const batch = db.batch();
+                    
+                    storageItems.forEach((item, index) => {
+                        const storageId = item.dataset.storageId;
+                        const storage = this.storage.find(s => s.id === storageId);
+                        
+                        if (storage) {
+                            const ref = db.collection('storage').doc(storageId);
+                            batch.update(ref, {
+                                order: index + 1,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                updatedBy: this.currentUser.email
+                            });
+                        }
+                    });
+                    
+                    await batch.commit();
+                    this.showNotification('Порядок хранилищ обновлен');
+                    
+                } catch (error) {
+                    console.error('Ошибка обновления порядка:', error);
+                    this.showNotification('Ошибка обновления порядка', 'error');
+                }
+            },
+
+            positionStorage: function(storageId) {
+                const storage = this.storage.find(s => s.id === storageId);
+                if (!storage) return;
+                
+                this.positioningStorage = storage;
+                
+                // Заполняем форму
+                document.getElementById('positionStorageName').textContent = 
+                    `${storage.name} (${storage.type})`;
+                document.getElementById('positionOrder').value = storage.order || 0;
+                
+                this.showModal('positionModal');
+            },
+
+            async savePosition() {
+                if (!this.positioningStorage) return;
+                
+                try {
+                    const order = parseInt(document.getElementById('positionOrder').value);
+                    const gridPosition = document.getElementById('gridPosition').value;
+                    
+                    if (isNaN(order)) {
+                        this.showError('positionError', 'Введите корректный порядковый номер');
+                        return;
+                    }
+                    
+                    let newOrder = order;
+                    
+                    // Автоматическое позиционирование
+                    if (gridPosition !== 'auto') {
+                        const maxOrder = Math.max(...this.storage.map(s => s.order || 0));
+                        
+                        switch(gridPosition) {
+                            case 'first':
+                                newOrder = 1;
+                                // Сдвигаем остальные
+                                await this.shiftStorageOrders(1);
+                                break;
+                            case 'last':
+                                newOrder = maxOrder + 1;
+                                break;
+                            case 'type':
+                                // Находим первый элемент такого же типа
+                                const sameTypeStorages = this.storage
+                                    .filter(s => s.type === this.positioningStorage.type && s.id !== this.positioningStorage.id)
+                                    .sort((a, b) => (a.order || 0) - (b.order || 0));
+                                
+                                if (sameTypeStorages.length > 0) {
+                                    newOrder = sameTypeStorages[0].order || 1;
+                                    await this.shiftStorageOrders(newOrder);
+                                }
+                                break;
+                        }
+                    }
+                    
+                    await db.collection('storage').doc(this.positioningStorage.id).update({
+                        order: newOrder,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: this.currentUser.email
+                    });
+                    
+                    this.hideModal('positionModal');
+                    this.showNotification(`Позиция "${this.positioningStorage.name}" обновлена`);
+                    
+                    this.positioningStorage = null;
+                    
+                } catch (error) {
+                    console.error('Ошибка сохранения позиции:', error);
+                    this.showError('positionError', error.message);
+                }
+            },
+
+            async shiftStorageOrders(startFrom) {
+                const storagesToShift = this.storage
+                    .filter(s => s.order >= startFrom && s.id !== this.positioningStorage.id)
+                    .sort((a, b) => (a.order || 0) - (b.order || 0));
+                
+                const batch = db.batch();
+                
+                storagesToShift.forEach((storage, index) => {
+                    const ref = db.collection('storage').doc(storage.id);
+                    batch.update(ref, {
+                        order: startFrom + index + 1,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+                
+                await batch.commit();
+            },
+
+            async moveStorageUp(storageId) {
+                const storage = this.storage.find(s => s.id === storageId);
+                if (!storage) return;
+                
+                const currentOrder = storage.order || 0;
+                if (currentOrder <= 1) {
+                    this.showNotification('Хранилище уже на первом месте', 'info');
+                    return;
+                }
+                
+                // Находим предыдущее хранилище
+                const prevStorage = this.storage.find(s => (s.order || 0) === currentOrder - 1);
+                
+                try {
+                    const batch = db.batch();
+                    
+                    // Меняем местами
+                    const storageRef = db.collection('storage').doc(storageId);
+                    batch.update(storageRef, {
+                        order: currentOrder - 1,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: this.currentUser.email
+                    });
+                    
+                    if (prevStorage) {
+                        const prevRef = db.collection('storage').doc(prevStorage.id);
+                        batch.update(prevRef, {
+                            order: currentOrder,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                             updatedBy: this.currentUser.email
-                        })
-                    );
+                        });
+                    }
                     
-                    const storageDocs = await Promise.all(storagePromises);
+                    await batch.commit();
+                    this.showNotification(`"${storage.name}" перемещен выше`);
                     
-                    // Добавляем тестовые баллоны
-                    const today = new Date();
-                    const nextYear = new Date();
-                    nextYear.setFullYear(nextYear.getFullYear() + 1);
+                } catch (error) {
+                    console.error('Ошибка перемещения:', error);
+                    this.showNotification('Ошибка перемещения', 'error');
+                }
+            },
+
+            async moveStorageDown(storageId) {
+                const storage = this.storage.find(s => s.id === storageId);
+                if (!storage) return;
+                
+                const maxOrder = Math.max(...this.storage.map(s => s.order || 0));
+                const currentOrder = storage.order || 0;
+                
+                if (currentOrder >= maxOrder) {
+                    this.showNotification('Хранилище уже на последнем месте', 'info');
+                    return;
+                }
+                
+                // Находим следующее хранилище
+                const nextStorage = this.storage.find(s => (s.order || 0) === currentOrder + 1);
+                
+                try {
+                    const batch = db.batch();
                     
-                    const cylinders = [
-                        // Кислородные баллоны
-                        { number: 'Б-1001', gasType: 'Кислород', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        { number: 'Б-1002', gasType: 'Кислород', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        { number: 'Б-1003', gasType: 'Кислород', status: 'Пустой', capacity: 40, workingPressure: 150 },
-                        { number: 'Б-1004', gasType: 'Кислород', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        
-                        // Азотные баллоны
-                        { number: 'Б-2001', gasType: 'Азот', status: 'Полный', capacity: 50, workingPressure: 200 },
-                        { number: 'Б-2002', gasType: 'Азот', status: 'Пустой', capacity: 50, workingPressure: 200 },
-                        
-                        // Аргоновые баллоны
-                        { number: 'Б-3001', gasType: 'Аргон', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        { number: 'Б-3002', gasType: 'Аргон', status: 'Полный', capacity: 40, workingPressure: 150 },
-                        
-                        // Гелиевые баллоны
-                        { number: 'Б-4001', gasType: 'Гелий', status: 'Полный', capacity: 10, workingPressure: 250 },
-                        
-                        // Ацетиленовые баллоны
-                        { number: 'Б-5001', gasType: 'Ацетилен', status: 'Пустой', capacity: 40, workingPressure: 19 },
-                        
-                        // Углекислый газ
-                        { number: 'Б-6001', gasType: 'Углекислый газ', status: 'Полный', capacity: 40, workingPressure: 75 }
-                    ];
+                    // Меняем местами
+                    const storageRef = db.collection('storage').doc(storageId);
+                    batch.update(storageRef, {
+                        order: currentOrder + 1,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: this.currentUser.email
+                    });
                     
-                    const cylinderPromises = cylinders.map((cylinder, index) => {
-                        const storageIndex = index % storageDocs.length;
-                        const position = index % 5; // Распределяем по позициям
-                        
-                        return db.collection('cylinders').add({
-                            number: cylinder.number,
-                            gasType: cylinder.gasType,
-                            deliveryDate: today.toISOString().split('T')[0],
-                            manufactureDate: today.toISOString().split('T')[0],
-                            nextInspectionDate: nextYear.toISOString().split('T')[0],
-                            status: cylinder.status,
-                            workingPressure: cylinder.workingPressure,
-                            testPressure: cylinder.workingPressure * 1.5,
-                            capacity: cylinder.capacity,
-                            supplier: 'ООО "ГазСнаб"',
-                            notes: 'Тестовый баллон',
-                            storageId: storageDocs[storageIndex].id,
-                            position: position,
-                            archived: false,
-                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            createdBy: this.currentUser.email,
+                    if (nextStorage) {
+                        const nextRef = db.collection('storage').doc(nextStorage.id);
+                        batch.update(nextRef, {
+                            order: currentOrder,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedBy: this.currentUser.email
+                        });
+                    }
+                    
+                    await batch.commit();
+                    this.showNotification(`"${storage.name}" перемещен ниже`);
+                    
+                } catch (error) {
+                    console.error('Ошибка перемещения:', error);
+                    this.showNotification('Ошибка перемещения', 'error');
+                }
+            },
+
+            // ========== АВТОМАТИЧЕСКОЕ УПОРЯДОЧИВАНИЕ ==========
+            async reorderAllStorages() {
+                if (!confirm('Переупорядочить все хранилища по алфавиту?')) return;
+                
+                try {
+                    const sorted = [...this.storage].sort((a, b) => a.name.localeCompare(b.name));
+                    const batch = db.batch();
+                    
+                    sorted.forEach((storage, index) => {
+                        const ref = db.collection('storage').doc(storage.id);
+                        batch.update(ref, {
+                            order: index + 1,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                             updatedBy: this.currentUser.email
                         });
                     });
                     
-                    await Promise.all(cylinderPromises);
-                    
-                    this.showNotification('Тестовые данные успешно добавлены');
+                    await batch.commit();
+                    this.showNotification(`${sorted.length} хранилищ упорядочены по алфавиту`);
                     
                 } catch (error) {
-                    console.error('Ошибка добавления тестовых данных:', error);
-                    this.showNotification('Ошибка добавления тестовых данных', 'error');
+                    console.error('Ошибка упорядочивания:', error);
+                    this.showNotification('Ошибка упорядочивания', 'error');
+                }
+            },
+
+            async groupByType() {
+                if (!confirm('Сгруппировать хранилища по типам?')) return;
+                
+                try {
+                    const types = ['Кабинет', 'Шкаф', 'Склад', 'Клеть'];
+                    let currentOrder = 1;
+                    const batch = db.batch();
+                    
+                    types.forEach(type => {
+                        const storagesOfType = this.storage.filter(s => s.type === type);
+                        
+                        storagesOfType.forEach((storage, index) => {
+                            const ref = db.collection('storage').doc(storage.id);
+                            batch.update(ref, {
+                                order: currentOrder + index,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                updatedBy: this.currentUser.email
+                            });
+                        });
+                        
+                        currentOrder += storagesOfType.length;
+                    });
+                    
+                    await batch.commit();
+                    this.showNotification('Хранилища сгруппированы по типам');
+                    
+                } catch (error) {
+                    console.error('Ошибка группировки:', error);
+                    this.showNotification('Ошибка группировки', 'error');
+                }
+            },
+
+            async resetPositions() {
+                if (!confirm('Сбросить все позиции хранилищ к начальным значениям?')) return;
+                
+                try {
+                    const batch = db.batch();
+                    
+                    this.storage.forEach((storage, index) => {
+                        const ref = db.collection('storage').doc(storage.id);
+                        batch.update(ref, {
+                            order: index + 1,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            updatedBy: this.currentUser.email
+                        });
+                    });
+                    
+                    await batch.commit();
+                    this.showNotification('Позиции сброшены к начальным значениям');
+                    
+                } catch (error) {
+                    console.error('Ошибка сброса:', error);
+                    this.showNotification('Ошибка сброса позиций', 'error');
                 }
             },
 
