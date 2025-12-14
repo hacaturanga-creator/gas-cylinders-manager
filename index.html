@@ -2924,51 +2924,77 @@
                 }
             },
 
-            async deleteStorage(storageId) {
-                const storage = this.storage.find(s => s.id === storageId);
-                if (!storage) return;
-                
-                // Проверяем права для удаления
-                if (this.userRole !== 'admin') {
-                    this.showNotification('Только администраторы могут удалять хранилища', 'error');
-                    return;
-                }
-                
-                const cylindersInStorage = this.cylinders.filter(c => c.storageId === storageId);
-                
-                if (cylindersInStorage.length > 0) {
-                    const confirmDelete = confirm(
-                        `В хранилище "${storage.name}" находится ${cylindersInStorage.length} баллонов.\n` +
-                        `Сначала переместите все баллоны в другие хранилища или освободите их.\n\n` +
-                        `Вы уверены, что хотите удалить хранилище?`
-                    );
-                    
-                    if (!confirmDelete) return;
-                    
-                    // Освобождаем все баллоны в хранилище
-                    const batch = db.batch();
-                    cylindersInStorage.forEach(cylinder => {
-                        const ref = db.collection('cylinders').doc(cylinder.id);
-                        batch.update(ref, { 
-                            storageId: null, 
-                            position: null,
-                            lastMoved: firebase.firestore.FieldValue.serverTimestamp(),
-                            movedBy: this.currentUser.email
-                        });
-                    });
-                    
-                    await batch.commit();
-                }
-                
-                try {
-                    await db.collection('storage').doc(storageId).delete();
-                    this.showNotification(`Хранилище "${storage.name}" удалено`);
-                    
-                } catch (error) {
-                    console.error('Ошибка удаления:', error);
-                    this.showNotification('Ошибка удаления хранилища', 'error');
-                }
-            },
+async deleteStorage(storageId) {
+    const storage = this.storage.find(s => s.id === storageId);
+    if (!storage) return;
+    
+    // Проверяем права для удаления
+    if (this.userRole !== 'admin') {
+        this.showNotification('Только администраторы могут удалять хранилища', 'error');
+        return;
+    }
+    
+    // ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ
+    const cylindersInStorage = this.cylinders.filter(c => c.storageId === storageId);
+    
+    let message = `Вы уверены, что хотите удалить хранилище "${storage.name}"?`;
+    
+    if (cylindersInStorage.length > 0) {
+        message = `⚠️ ВНИМАНИЕ!\n\n` +
+                  `В хранилище "${storage.name}" находится ${cylindersInStorage.length} баллонов.\n\n` +
+                  `Выберите действие:\n` +
+                  `1. УДАЛИТЬ с перемещением баллонов в свободные\n` +
+                  `2. УДАЛИТЬ ВСЕ (хранилище и баллоны)\n` +
+                  `3. Отмена`;
+    }
+    
+    // Простое подтверждение для пустых хранилищ
+    if (cylindersInStorage.length === 0) {
+        const confirmDelete = confirm(message);
+        if (!confirmDelete) return;
+    } 
+    // Диалог с выбором для непустых хранилищ
+    else {
+        const userChoice = prompt(message, "1");
+        
+        if (userChoice === null || userChoice === "3") {
+            return; // Отмена
+        }
+        
+        if (userChoice !== "1" && userChoice !== "2") {
+            this.showNotification('Неверный выбор', 'error');
+            return;
+        }
+    }
+    
+    try {
+        // Если есть баллоны и выбран вариант 1 - освобождаем их
+        if (cylindersInStorage.length > 0) {
+            const batch = db.batch();
+            cylindersInStorage.forEach(cylinder => {
+                const ref = db.collection('cylinders').doc(cylinder.id);
+                batch.update(ref, { 
+                    storageId: null, 
+                    position: null,
+                    lastMoved: firebase.firestore.FieldValue.serverTimestamp(),
+                    movedBy: this.currentUser.email,
+                    movedFrom: storage.name
+                });
+            });
+            
+            await batch.commit();
+            this.showNotification(`${cylindersInStorage.length} баллонов освобождено`);
+        }
+        
+        // Удаляем само хранилище
+        await db.collection('storage').doc(storageId).delete();
+        this.showNotification(`Хранилище "${storage.name}" удалено`);
+        
+    } catch (error) {
+        console.error('Ошибка удаления:', error);
+        this.showNotification('Ошибка удаления хранилища', 'error');
+    }
+},
 
             // ========== ТЕСТОВЫЕ ДАННЫЕ ==========
             async addDemoData() {
