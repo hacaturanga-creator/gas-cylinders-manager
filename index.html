@@ -62,32 +62,6 @@
             transition: all 0.3s;
         }
         
-        .storage-grid.arrange-mode {
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            min-height: 500px;
-            background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%, 
-                        transparent 50%, #f8f9fa 50%, #f8f9fa 75%, transparent 75%, transparent);
-            background-size: 20px 20px;
-            border: 2px dashed #3498db;
-            border-radius: 8px;
-            padding: 15px;
-        }
-        
-        .storage-grid.arrange-mode .storage-item {
-            cursor: move !important;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .storage-grid.arrange-mode .storage-item:hover {
-            transform: scale(1.02);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-        }
-        
-        .storage-grid.arrange-mode .storage-item.dragging {
-            opacity: 0.8;
-            transform: scale(1.05) rotate(2deg);
-        }
-        
         .storage-item { 
             background: white; 
             border: 2px solid #3498db; 
@@ -98,9 +72,6 @@
             transition: all 0.3s;
             position: relative;
         }
-        
-        .storage-item.closet { border-color: #9b59b6; }
-        .storage-item.drag-over { background: #e3f2fd; border-color: #3498db; border-style: dashed; }
         
         .storage-header { 
             display: flex; 
@@ -140,51 +111,36 @@
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         }
         
-        .slot.empty:hover { border-color: #3498db; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); }
-        .slot.empty::after { content: '+'; font-size: 24px; color: #95a5a6; font-weight: 300; }
+        .slot.empty:hover { border-color: #3498db; }
+        .slot.empty::after { content: '+'; font-size: 24px; color: #95a5a6; }
         
         .slot:not(.empty) { min-height: 100px; padding: 5px; background: white; border: 2px solid #d5dbdb; }
         
-        .slot.drag-over { background: #d5f4e6; border-color: #27ae60; border-style: solid; }
-        
         .cylinder { 
             width: 100%; 
-            height: 100%; 
             background: white; 
             border-radius: 6px; 
             padding: 10px; 
             border-left: 4px solid; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            cursor: grab; 
-            user-select: none; 
+            cursor: pointer;
         }
-        
-        .cylinder:active { cursor: grabbing; }
-        .cylinder.dragging { opacity: 0.7; transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .cylinder.oxygen { border-left-color: #e74c3c; }
         .cylinder.nitrogen { border-left-color: #3498db; }
         .cylinder.argon { border-left-color: #9b59b6; }
         .cylinder.helium { border-left-color: #2ecc71; }
-        .cylinder.acetylene { border-left-color: #e67e22; }
-        .cylinder.hydrogen { border-left-color: #1abc9c; }
-        .cylinder.methane { border-left-color: #8e44ad; }
-        .cylinder.carbon-dioxide { border-left-color: #7f8c8d; }
         
         .cylinder-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .cylinder-number { font-weight: bold; font-size: 12px; }
         .cylinder-status { font-size: 10px; padding: 2px 6px; border-radius: 10px; }
         .cylinder-status.full { background: #d5f4e6; color: #27ae60; }
         .cylinder-status.empty { background: #fadbd8; color: #e74c3c; }
-        .cylinder-status.expired { background: #f8c471; color: #d35400; }
-        .cylinder-gas { font-size: 11px; color: #666; margin-bottom: 3px; }
-        .cylinder-details { font-size: 10px; color: #888; line-height: 1.3; }
+        .cylinder-gas { font-size: 11px; color: #666; }
         .cylinder-actions { display: flex; gap: 3px; margin-top: 6px; }
         .cylinder-actions button { flex: 1; padding: 3px; font-size: 10px; }
         
         .free-cylinders { background: white; border: 2px solid #f39c12; border-radius: 8px; padding: 15px; margin-top: 30px; }
-        .free-cylinders.drag-over { background: #fef5e7; border-color: #f39c12; border-style: dashed; }
-        .free-cylinders-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; min-height: 60px; }
-        
+        .free-cylinders-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
         .free-cylinder { 
             min-width: 140px;
             background: white; 
@@ -192,9 +148,7 @@
             border-radius: 6px; 
             border-left: 4px solid; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            cursor: grab; 
         }
-        .free-cylinder:active { cursor: grabbing; }
         
         .archive-section { background: white; border: 2px solid #95a5a6; border-radius: 8px; padding: 15px; margin-top: 30px; }
         .archive-toggle { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -202,33 +156,7 @@
         .archive-content.expanded { max-height: 500px; overflow-y: auto; margin-top: 15px; }
         .archive-table { width: 100%; border-collapse: collapse; font-size: 12px; }
         .archive-table th, .archive-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .archive-table th { background: #f8f9fa; font-weight: 600; }
-        
-        .realtime-indicator { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            background: #2ecc71; 
-            color: white; 
-            padding: 8px 15px; 
-            border-radius: 20px; 
-            font-size: 12px; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 999;
-        }
-        .realtime-indicator.offline { background: #e74c3c; }
-        .realtime-indicator .pulse { width: 10px; height: 10px; border-radius: 50%; background: white; animation: pulse 2s infinite; }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
-        .error-message { background: #fadbd8; color: #e74c3c; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 14px; }
+        .archive-table th { background: #f8f9fa; }
         
         .notification { 
             position: fixed; 
@@ -238,37 +166,16 @@
             color: white; 
             padding: 15px 20px; 
             border-radius: 6px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
             z-index: 1001; 
         }
         .notification.error { background: #e74c3c; }
         .notification.warning { background: #f39c12; }
-        .notification.info { background: #3498db; }
-        
-        .drop-zone { border: 2px dashed #3498db; border-radius: 8px; padding: 20px; text-align: center; background: #f8f9fa; margin-bottom: 20px; }
-        .drop-zone.drag-over { background: #e3f2fd; border-color: #2980b9; }
         
         .badge { background: #3498db; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
         .admin-only { display: none; }
         .admin-only.show { display: inline-block; }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         
-        .position-controls { display: flex; gap: 3px; margin-left: 5px; }
-        
-        .password-strength { height: 4px; background: #eee; border-radius: 2px; margin-top: 5px; overflow: hidden; }
-        .password-strength-bar { height: 100%; width: 0%; transition: width 0.3s; }
-        .password-strength.weak .password-strength-bar { width: 33%; background: #e74c3c; }
-        .password-strength.medium .password-strength-bar { width: 66%; background: #f39c12; }
-        .password-strength.strong .password-strength-bar { width: 100%; background: #27ae60; }
-        
-        .user-menu { position: relative; display: inline-block; }
-        .user-menu-btn { display: flex; align-items: center; gap: 8px; background: #34495e; padding: 8px 12px; border-radius: 20px; cursor: pointer; }
-        .user-menu-btn:hover { background: #2c3e50; }
-        .user-menu-dropdown { position: absolute; top: 100%; right: 0; background: white; min-width: 200px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 1000; margin-top: 5px; display: none; }
-        .user-menu-dropdown.show { display: block; }
-        .user-menu-item { padding: 12px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .user-menu-item:hover { background: #f8f9fa; }
-        .user-menu-icon { width: 20px; text-align: center; }
+        .error-message { background: #fadbd8; color: #e74c3c; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 14px; }
     </style>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -276,12 +183,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-    <!-- Модальное окно входа -->
     <div id="loginModal" class="modal">
         <div class="modal-content" style="max-width: 450px;">
             <div style="text-align: center; margin-bottom: 25px;">
-                <h2 style="margin-bottom: 10px; color: #2c3e50;">🔐 Управление баллонами газов</h2>
-                <p style="color: #666; font-size: 14px;">Войдите или зарегистрируйтесь</p>
+                <h2 style="margin-bottom: 10px;">🔐 Управление баллонами газов</h2>
+                <p style="color: #666;">Войдите или зарегистрируйтесь</p>
             </div>
             
             <div class="form-group">
@@ -295,7 +201,7 @@
             </div>
             
             <div style="margin-top: 10px; text-align: right;">
-                <button id="forgotPasswordBtn" class="btn-link" style="font-size: 12px;">Забыли пароль?</button>
+                <button id="forgotPasswordBtn" class="btn-link">Забыли пароль?</button>
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
@@ -304,151 +210,95 @@
             </div>
             
             <div id="loginError" class="error-message hidden"></div>
-            
-            <div id="firstAdminContainer" style="margin-top: 15px; text-align: center;"></div>
+            <div id="firstAdminContainer" style="margin-top: 15px;"></div>
         </div>
     </div>
 
-    <!-- Модальное окно сброса пароля -->
     <div id="resetPasswordModal" class="modal hidden">
         <div class="modal-content" style="max-width: 450px;">
-            <h2>🔐 Сброс пароля</h2>
-            <p style="margin-bottom: 20px; color: #666;">Введите ваш email, и мы отправим ссылку для сброса пароля</p>
-            
+            <h2>Сброс пароля</h2>
             <div class="form-group">
                 <label>Email:</label>
                 <input type="email" id="resetEmail" placeholder="your@email.com">
             </div>
-            
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="sendResetBtn" class="btn btn-primary" style="flex: 1;">Отправить</button>
-                <button id="cancelResetBtn" class="btn btn-secondary" style="flex: 1;">Отмена</button>
+                <button id="sendResetBtn" class="btn btn-primary">Отправить</button>
+                <button id="cancelResetBtn" class="btn btn-secondary">Отмена</button>
             </div>
-            
             <div id="resetError" class="error-message hidden"></div>
         </div>
     </div>
 
-    <!-- Модальное окно смены пароля -->
     <div id="changePasswordModal" class="modal hidden">
         <div class="modal-content" style="max-width: 450px;">
-            <h2>🔒 Смена пароля</h2>
-            
-            <div class="form-group">
-                <label>Текущий пароль:</label>
-                <input type="password" id="currentPassword" placeholder="Введите текущий пароль">
+            <h2>Смена пароля</h2>
+            <div class="form-group"><label>Текущий пароль:</label><input type="password" id="currentPassword"></div>
+            <div class="form-group"><label>Новый пароль:</label><input type="password" id="newPassword"></div>
+            <div class="form-group"><label>Подтвердите:</label><input type="password" id="confirmPassword"></div>
+            <div style="display: flex; gap: 10px;">
+                <button id="savePasswordBtn" class="btn btn-primary">Сохранить</button>
+                <button id="cancelPasswordBtn" class="btn btn-secondary">Отмена</button>
             </div>
-            
-            <div class="form-group">
-                <label>Новый пароль:</label>
-                <input type="password" id="newPassword" placeholder="Введите новый пароль" oninput="App.checkPasswordStrength()">
-                <div class="password-strength" id="passwordStrength"><div class="password-strength-bar"></div></div>
-            </div>
-            
-            <div class="form-group">
-                <label>Подтвердите новый пароль:</label>
-                <input type="password" id="confirmPassword" placeholder="Повторите новый пароль">
-            </div>
-            
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="savePasswordBtn" class="btn btn-primary" style="flex: 1;">Изменить пароль</button>
-                <button id="cancelPasswordBtn" class="btn btn-secondary" style="flex: 1;">Отмена</button>
-            </div>
-            
             <div id="passwordError" class="error-message hidden"></div>
         </div>
     </div>
 
-    <!-- Модальное окно профиля -->
     <div id="profileModal" class="modal hidden">
-        <div class="modal-content" style="max-width: 450px;">
-            <h2>👤 Мой профиль</h2>
-            <div class="form-group">
-                <label>Имя:</label>
-                <input type="text" id="profileName" placeholder="Ваше имя">
+        <div class="modal-content">
+            <h2>Мой профиль</h2>
+            <div class="form-group"><label>Имя:</label><input type="text" id="profileName"></div>
+            <div class="form-group"><label>Email:</label><input type="email" id="profileEmail" readonly></div>
+            <div class="form-group"><label>Роль:</label><input type="text" id="profileRole" readonly></div>
+            <div style="display: flex; gap: 10px;">
+                <button id="saveProfileBtn" class="btn btn-primary">Сохранить</button>
+                <button id="changePasswordProfileBtn" class="btn btn-warning">Сменить пароль</button>
+                <button id="closeProfileBtn" class="btn btn-secondary">Закрыть</button>
             </div>
-            <div class="form-group">
-                <label>Email:</label>
-                <input type="email" id="profileEmail" readonly>
-            </div>
-            <div class="form-group">
-                <label>Роль:</label>
-                <input type="text" id="profileRole" readonly>
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="saveProfileBtn" class="btn btn-primary" style="flex: 1;">Сохранить</button>
-                <button id="changePasswordProfileBtn" class="btn btn-warning" style="flex: 1;">Сменить пароль</button>
-                <button id="closeProfileBtn" class="btn btn-secondary" style="flex: 1;">Закрыть</button>
-            </div>
-            <div id="profileError" class="error-message hidden"></div>
         </div>
     </div>
 
-    <!-- Модальное окно добавления баллона -->
     <div id="addCylinderModal" class="modal hidden">
         <div class="modal-content">
-            <h2 id="cylinderModalTitle">Добавить баллон</h2>
+            <h2>Добавить баллон</h2>
             <div class="form-row">
-                <div class="form-group"><label>Номер баллона:</label><input type="text" id="cylinderNumber" placeholder="Б-1234"></div>
-                <div class="form-group"><label>Тип газа:</label>
-                    <select id="cylinderGasType">
-                        <option value="Кислород">Кислород</option><option value="Азот">Азот</option><option value="Аргон">Аргон</option>
-                        <option value="Гелий">Гелий</option><option value="Ацетилен">Ацетилен</option><option value="Водород">Водород</option>
-                        <option value="Метан">Метан</option><option value="Углекислый газ">Углекислый газ</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>Номер:</label><input type="text" id="cylinderNumber"></div>
+                <div class="form-group"><label>Тип газа:</label><select id="cylinderGasType"><option>Кислород</option><option>Азот</option><option>Аргон</option><option>Гелий</option></select></div>
             </div>
             <div class="form-row">
                 <div class="form-group"><label>Дата поставки:</label><input type="date" id="deliveryDate"></div>
-                <div class="form-group"><label>Дата изготовления:</label><input type="date" id="manufactureDate"></div>
-            </div>
-            <div class="form-row">
                 <div class="form-group"><label>Освидетельствование:</label><input type="date" id="nextInspectionDate"></div>
-                <div class="form-group"><label>Статус:</label><select id="cylinderStatus"><option value="Полный">Полный</option><option value="Пустой">Пустой</option></select></div>
             </div>
             <div class="form-row">
-                <div class="form-group"><label>Раб. давление (атм):</label><input type="number" id="workingPressure" value="150"></div>
-                <div class="form-group"><label>Давление испытаний:</label><input type="number" id="testPressure" value="225"></div>
-            </div>
-            <div class="form-row">
+                <div class="form-group"><label>Статус:</label><select id="cylinderStatus"><option>Полный</option><option>Пустой</option></select></div>
                 <div class="form-group"><label>Вместимость (л):</label><input type="number" id="capacity" value="40"></div>
-                <div class="form-group"><label>Поставщик:</label><input type="text" id="supplier" value="ООО ГазСнаб"></div>
             </div>
-            <div class="form-group"><label>Примечание:</label><textarea id="notes"></textarea></div>
             <div style="display: flex; gap: 10px;">
                 <button id="saveCylinderBtn" class="btn btn-primary">Сохранить</button>
                 <button id="cancelCylinderBtn" class="btn btn-secondary">Отмена</button>
             </div>
-            <div id="cylinderError" class="error-message hidden"></div>
         </div>
     </div>
 
-    <!-- Модальное окно добавления хранилища -->
     <div id="addStorageModal" class="modal hidden">
         <div class="modal-content">
             <h2>Добавить хранилище</h2>
             <div class="form-group"><label>Название:</label><input type="text" id="storageName"></div>
             <div class="form-row">
-                <div class="form-group"><label>Тип:</label><select id="storageType"><option value="Кабинет">Кабинет</option><option value="Шкаф">Шкаф</option><option value="Склад">Склад</option><option value="Клеть">Клеть</option></select></div>
+                <div class="form-group"><label>Тип:</label><select id="storageType"><option>Кабинет</option><option>Шкаф</option><option>Склад</option></select></div>
                 <div class="form-group"><label>Вместимость:</label><input type="number" id="storageCapacity" value="10"></div>
             </div>
-            <div class="form-group"><label>Местоположение:</label><input type="text" id="storageLocation"></div>
-            <div class="form-group"><label>Описание:</label><textarea id="storageDescription"></textarea></div>
             <div style="display: flex; gap: 10px;">
                 <button id="saveStorageBtn" class="btn btn-primary">Сохранить</button>
                 <button id="cancelStorageBtn" class="btn btn-secondary">Отмена</button>
             </div>
-            <div id="storageError" class="error-message hidden"></div>
         </div>
     </div>
 
-    <!-- Модальное окно архивации -->
     <div id="archiveCylinderModal" class="modal hidden">
         <div class="modal-content">
-            <h2>Переместить в архив</h2>
+            <h2>Архивировать баллон</h2>
             <p id="archiveCylinderInfo"></p>
-            <div class="form-group"><label>Причина:</label><select id="archiveReason"><option value="">Выберите</option><option value="Списание">Списание</option><option value="Брак">Брак</option><option value="Утилизация">Утилизация</option></select></div>
-            <div class="form-group"><label>Комментарий:</label><textarea id="archiveComment"></textarea></div>
+            <div class="form-group"><label>Причина:</label><select id="archiveReason"><option>Списание</option><option>Брак</option><option>Утилизация</option></select></div>
             <div style="display: flex; gap: 10px;">
                 <button id="confirmArchiveBtn" class="btn btn-danger">Архивировать</button>
                 <button id="cancelArchiveBtn" class="btn btn-secondary">Отмена</button>
@@ -456,46 +306,29 @@
         </div>
     </div>
 
-    <!-- Модальное окно просмотра баллона -->
-    <div id="viewCylinderModal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Баллон <span id="viewCylinderNumber"></span></h2>
-            <div class="form-group"><label>Номер:</label><input type="text" id="viewNumber" readonly></div>
-            <div class="form-group"><label>Газ:</label><input type="text" id="viewGasType" readonly></div>
-            <div class="form-group"><label>Статус:</label><input type="text" id="viewStatus" readonly></div>
-            <div class="form-group"><label>Место хранения:</label><input type="text" id="viewStorageLocation" readonly></div>
-            <div style="display: flex; gap: 10px;">
-                <button id="editCylinderBtn" class="btn btn-primary">Редактировать</button>
-                <button id="closeViewBtn" class="btn btn-secondary">Закрыть</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Модальное окно управления пользователями -->
     <div id="usersModal" class="modal hidden">
         <div class="modal-content">
-            <h2>👥 Пользователи</h2>
-            <div id="usersList" style="max-height: 400px; overflow-y: auto;"></div>
-            <button onclick="App.hideModal('usersModal')" class="btn btn-secondary" style="margin-top: 15px;">Закрыть</button>
+            <h2>Пользователи</h2>
+            <div id="usersList"></div>
+            <button onclick="App.hideModal('usersModal')" class="btn btn-secondary">Закрыть</button>
         </div>
     </div>
 
-    <!-- Основное приложение -->
     <div id="app" class="hidden">
         <header class="header">
             <h1>🗲 Управление баллонами газов</h1>
             <div class="user-info">
-                <div class="user-menu">
-                    <div class="user-menu-btn" id="userMenuBtn">
+                <div class="user-menu" style="position: relative;">
+                    <div class="user-menu-btn" id="userMenuBtn" style="display: flex; gap: 8px; background: #34495e; padding: 8px 12px; border-radius: 20px; cursor: pointer;">
                         <span id="currentUserInitials">U</span>
                         <span id="currentUserName"></span>
                         <span>▼</span>
                     </div>
-                    <div class="user-menu-dropdown" id="userMenuDropdown">
-                        <div class="user-menu-item" onclick="App.showProfile()">👤 Мой профиль</div>
-                        <div class="user-menu-item" onclick="App.showChangePassword()">🔒 Сменить пароль</div>
-                        <div class="user-menu-item admin-only hidden" onclick="App.showUsersModal()">👥 Пользователи</div>
-                        <div class="user-menu-item" onclick="App.logout()" style="color: #e74c3c;">🚪 Выйти</div>
+                    <div id="userMenuDropdown" style="display: none; position: absolute; top: 100%; right: 0; background: white; min-width: 200px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 1000;">
+                        <div class="user-menu-item" style="padding: 12px 15px; cursor: pointer;" onclick="App.showProfile()">👤 Мой профиль</div>
+                        <div class="user-menu-item" style="padding: 12px 15px; cursor: pointer;" onclick="App.showChangePassword()">🔒 Сменить пароль</div>
+                        <div class="user-menu-item admin-only hidden" style="padding: 12px 15px; cursor: pointer;" onclick="App.showUsersModal()">👥 Пользователи</div>
+                        <div class="user-menu-item" style="padding: 12px 15px; cursor: pointer; color: #e74c3c;" onclick="App.logout()">🚪 Выйти</div>
                     </div>
                 </div>
             </div>
@@ -514,7 +347,6 @@
                         <div class="stat-item"><span>Всего баллонов:</span><span id="totalCylinders">0</span></div>
                         <div class="stat-item"><span>Полные:</span><span id="fullCylinders">0</span></div>
                         <div class="stat-item"><span>Пустые:</span><span id="emptyCylinders">0</span></div>
-                        <div class="stat-item"><span>Просроченные:</span><span id="expiredCylinders">0</span></div>
                         <div class="stat-item"><span>Хранилищ:</span><span id="totalStorage">0</span></div>
                         <div class="stat-item"><span>В архиве:</span><span id="archivedCount">0</span></div>
                     </div>
@@ -525,8 +357,7 @@
                 </div>
                 <div class="sidebar-section admin-only hidden" id="adminSection">
                     <h3>Админ панель</h3>
-                    <button id="showUsersBtn" class="btn btn-info btn-block">👥 Управление пользователями</button>
-                    <button id="arrangeBtn" class="btn btn-info btn-block">📐 Расположить хранилища</button>
+                    <button id="showUsersBtn" class="btn btn-info btn-block">👥 Пользователи</button>
                 </div>
             </aside>
 
@@ -534,10 +365,6 @@
                 <div class="workspace-header">
                     <h2>Рабочая область</h2>
                     <button id="refreshBtn" class="btn btn-small">🔄 Обновить</button>
-                </div>
-
-                <div class="drop-zone" id="globalDropZone">
-                    📦 Перетащите баллон сюда, чтобы сделать свободным
                 </div>
 
                 <div id="storageContainer" class="storage-grid"></div>
@@ -552,7 +379,7 @@
                         <span>▼</span>
                     </div>
                     <div class="archive-content" id="archiveContent">
-                        <table class="archive-table"><thead><tr><th>Номер</th><th>Газ</th><th>Дата удаления</th><th>Причина</th><th>Действия</th></tr></thead><tbody id="archiveTableBody"></tbody></table>
+                        <table class="archive-table"><thead><tr><th>Номер</th><th>Газ</th><th>Дата</th><th>Причина</th><th>Действия</th></tr></thead><tbody id="archiveTableBody"></tbody></table>
                     </div>
                 </div>
 
@@ -564,14 +391,8 @@
         </div>
     </div>
 
-    <div class="realtime-indicator" id="realtimeIndicator" style="display: none;">
-        <div class="pulse"></div>
-        <span>Онлайн</span>
-    </div>
-
     <script>
-        // ========== КОНФИГУРАЦИЯ FIREBASE ==========
-        // ⚠️ ЗАМЕНИТЕ ЭТО НА ВАШУ КОНФИГУРАЦИЮ ИЗ FIREBASE CONSOLE ⚠️
+        // Firebase конфигурация (ВАША)
         const firebaseConfig = {
             apiKey: "AIzaSyA0Guq1AuGZ1HnlQUeoEgrdC8peHc1Qkms",
             authDomain: "gas-cylinders-manager.firebaseapp.com",
@@ -586,7 +407,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Глобальный объект приложения
         const App = {
             currentUser: null,
             userData: null,
@@ -594,31 +414,29 @@
             storage: [],
             cylinders: [],
             archivedCylinders: [],
-            draggingCylinder: null,
-            editingCylinderId: null,
-            isArrangeMode: false,
-            realtimeListeners: [],
 
             async init() {
                 this.setupEventListeners();
-                this.createRealtimeIndicator();
                 await this.checkForFirstAdmin();
                 
                 auth.onAuthStateChanged(async (user) => {
+                    console.log("Auth state changed:", user?.email);
                     if (user) {
                         this.currentUser = user;
                         await this.loadUserData();
-                        if (this.userData && (this.userData.status === 'active' || this.userData.status === 'approved')) {
+                        if (this.userData && this.userData.status === 'active') {
                             this.userRole = this.userData.role || 'user';
                             this.updateUIForRole();
                             this.showApp();
-                            this.setupRealtimeListeners();
-                            this.loadData();
+                            await this.loadData();
                         } else if (this.userData && this.userData.status === 'pending') {
                             this.showNotification('Ожидайте подтверждения администратора', 'warning');
-                            await this.logout();
+                            await auth.signOut();
                         } else {
-                            await this.logout();
+                            // Создаем запись для нового пользователя
+                            await this.createUserRecord();
+                            this.showApp();
+                            await this.loadData();
                         }
                     } else {
                         this.showLogin();
@@ -647,21 +465,16 @@
                 document.getElementById('quickExcelBtn').onclick = () => this.quickExportExcel();
                 document.getElementById('refreshBtn').onclick = () => this.loadData();
                 document.getElementById('showUsersBtn').onclick = () => this.showUsersModal();
-                document.getElementById('arrangeBtn').onclick = () => this.toggleArrangeMode();
                 document.getElementById('confirmArchiveBtn').onclick = () => this.confirmArchive();
                 document.getElementById('cancelArchiveBtn').onclick = () => this.hideModal('archiveCylinderModal');
-                document.getElementById('editCylinderBtn').onclick = () => this.editCylinderFromView();
-                document.getElementById('closeViewBtn').onclick = () => this.hideModal('viewCylinderModal');
                 
                 const userMenuBtn = document.getElementById('userMenuBtn');
-                userMenuBtn.onclick = (e) => { e.stopPropagation(); document.getElementById('userMenuDropdown').classList.toggle('show'); };
-                document.onclick = () => document.getElementById('userMenuDropdown').classList.remove('show');
-            },
-
-            createRealtimeIndicator() {
-                const indicator = document.getElementById('realtimeIndicator');
-                indicator.style.display = 'flex';
-                setInterval(() => indicator.classList.toggle('offline', !this.lastUpdateTime || Date.now() - this.lastUpdateTime > 10000), 1000);
+                const dropdown = document.getElementById('userMenuDropdown');
+                userMenuBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                };
+                document.onclick = () => dropdown.style.display = 'none';
             },
 
             async checkForFirstAdmin() {
@@ -683,22 +496,37 @@
                     const cred = await auth.createUserWithEmailAndPassword(email, password);
                     await db.collection('users').doc(cred.user.uid).set({
                         email, role: 'admin', status: 'active', name: 'Администратор',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        createdAt: new Date()
                     });
                     this.showNotification('Администратор создан! Войдите в систему.', 'success');
                     document.getElementById('firstAdminContainer').innerHTML = '';
+                    location.reload();
                 } catch(e) { alert('Ошибка: ' + e.message); }
             },
 
             async login() {
-                const email = document.getElementById('loginEmail').value;
+                const email = document.getElementById('loginEmail').value.trim();
                 const password = document.getElementById('loginPassword').value;
-                if (!email || !password) return this.showError('loginError', 'Введите email и пароль');
+                
+                console.log("Попытка входа:", email);
+                
+                if (!email || !password) {
+                    this.showError('loginError', 'Введите email и пароль');
+                    return;
+                }
+                
                 try {
-                    await auth.signInWithEmailAndPassword(email, password);
+                    const result = await auth.signInWithEmailAndPassword(email, password);
+                    console.log("Вход успешен:", result.user.email);
+                    this.showNotification('Добро пожаловать!', 'success');
                 } catch(e) {
+                    console.error("Ошибка входа:", e.code, e.message);
                     if (e.code === 'auth/user-not-found') {
                         this.showError('loginError', 'Пользователь не найден. Зарегистрируйтесь.');
+                    } else if (e.code === 'auth/wrong-password') {
+                        this.showError('loginError', 'Неверный пароль');
+                    } else if (e.code === 'auth/invalid-email') {
+                        this.showError('loginError', 'Неверный формат email');
                     } else {
                         this.showError('loginError', e.message);
                     }
@@ -706,34 +534,103 @@
             },
 
             async register() {
-                const email = document.getElementById('loginEmail').value;
+                const email = document.getElementById('loginEmail').value.trim();
                 const password = document.getElementById('loginPassword').value;
-                if (!email || !password || password.length < 6) return this.showError('loginError', 'Пароль минимум 6 символов');
+                
+                if (!email || !password || password.length < 6) {
+                    this.showError('loginError', 'Пароль должен быть не менее 6 символов');
+                    return;
+                }
+                
                 try {
                     const cred = await auth.createUserWithEmailAndPassword(email, password);
                     await db.collection('users').doc(cred.user.uid).set({
-                        email, role: 'user', status: 'pending', name: email.split('@')[0],
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        email, role: 'user', status: 'active', name: email.split('@')[0],
+                        createdAt: new Date()
                     });
-                    this.showNotification('Регистрация отправлена на подтверждение!', 'success');
-                    await auth.signOut();
-                } catch(e) { this.showError('loginError', e.message); }
+                    this.showNotification('Регистрация успешна!', 'success');
+                } catch(e) {
+                    this.showError('loginError', e.message);
+                }
             },
 
-            async resetPassword() {
-                const email = document.getElementById('resetEmail').value;
-                if (!email) return this.showError('resetError', 'Введите email');
-                try {
-                    await auth.sendPasswordResetEmail(email, { url: window.location.origin, handleCodeInApp: false });
-                    this.showNotification('Ссылка для сброса пароля отправлена на email!', 'success');
-                    this.hideModal('resetPasswordModal');
-                } catch(e) { this.showError('resetError', e.message); }
+            async createUserRecord() {
+                if (!this.currentUser) return;
+                const userRef = db.collection('users').doc(this.currentUser.uid);
+                const doc = await userRef.get();
+                if (!doc.exists) {
+                    await userRef.set({
+                        email: this.currentUser.email,
+                        role: 'user',
+                        status: 'active',
+                        name: this.currentUser.email.split('@')[0],
+                        createdAt: new Date()
+                    });
+                }
+                this.userData = (await userRef.get()).data();
+                this.userRole = this.userData.role || 'user';
+                this.updateUIForRole();
+                this.updateUserHeader();
+            },
+
+            async loadUserData() {
+                const doc = await db.collection('users').doc(this.currentUser.uid).get();
+                if (doc.exists) {
+                    this.userData = doc.data();
+                    this.userRole = this.userData.role || 'user';
+                } else {
+                    await this.createUserRecord();
+                }
+                this.updateUserHeader();
+                this.updateUIForRole();
+            },
+
+            updateUserHeader() {
+                const name = this.userData?.name || this.currentUser?.email?.split('@')[0] || 'User';
+                document.getElementById('currentUserName').innerText = name;
+                document.getElementById('currentUserInitials').innerText = name.charAt(0).toUpperCase();
+            },
+
+            updateUIForRole() {
+                const isAdmin = this.userRole === 'admin';
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    if (isAdmin) el.classList.add('show');
+                    else el.classList.remove('show');
+                });
+            },
+
+            showLogin() {
+                document.getElementById('loginModal').classList.remove('hidden');
+                document.getElementById('app').classList.add('hidden');
+            },
+
+            showApp() {
+                document.getElementById('loginModal').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+            },
+
+            async logout() {
+                await auth.signOut();
+                this.showLogin();
+                this.showNotification('Вы вышли из системы');
             },
 
             showResetPassword() {
                 document.getElementById('resetEmail').value = '';
                 this.hideError('resetError');
                 this.showModal('resetPasswordModal');
+            },
+
+            async resetPassword() {
+                const email = document.getElementById('resetEmail').value;
+                if (!email) return this.showError('resetError', 'Введите email');
+                try {
+                    await auth.sendPasswordResetEmail(email);
+                    this.showNotification('Ссылка для сброса пароля отправлена!', 'success');
+                    this.hideModal('resetPasswordModal');
+                } catch(e) {
+                    this.showError('resetError', e.message);
+                }
             },
 
             async changePassword() {
@@ -748,16 +645,10 @@
                     await this.currentUser.reauthenticateWithCredential(cred);
                     await this.currentUser.updatePassword(newPass);
                     this.hideModal('changePasswordModal');
-                    this.showNotification('Пароль изменен!', 'success');
-                } catch(e) { this.showError('passwordError', e.message); }
-            },
-
-            checkPasswordStrength() {
-                const pass = document.getElementById('newPassword').value;
-                const strength = document.getElementById('passwordStrength');
-                if (pass.length >= 8) strength.className = 'password-strength strong';
-                else if (pass.length >= 6) strength.className = 'password-strength medium';
-                else strength.className = 'password-strength weak';
+                    this.showNotification('Пароль изменен!');
+                } catch(e) {
+                    this.showError('passwordError', e.message);
+                }
             },
 
             showChangePassword() {
@@ -770,14 +661,12 @@
 
             async saveProfile() {
                 const name = document.getElementById('profileName').value;
-                if (!name) return this.showError('profileError', 'Введите имя');
-                try {
-                    await db.collection('users').doc(this.currentUser.uid).update({ name });
-                    this.userData.name = name;
-                    this.updateUserHeader();
-                    this.hideModal('profileModal');
-                    this.showNotification('Профиль обновлен');
-                } catch(e) { this.showError('profileError', e.message); }
+                if (!name) return;
+                await db.collection('users').doc(this.currentUser.uid).update({ name });
+                this.userData.name = name;
+                this.updateUserHeader();
+                this.hideModal('profileModal');
+                this.showNotification('Профиль обновлен');
             },
 
             showProfile() {
@@ -785,68 +674,6 @@
                 document.getElementById('profileEmail').value = this.currentUser.email;
                 document.getElementById('profileRole').value = this.userRole === 'admin' ? 'Администратор' : 'Пользователь';
                 this.showModal('profileModal');
-            },
-
-            async loadUserData() {
-                const doc = await db.collection('users').doc(this.currentUser.uid).get();
-                if (doc.exists) this.userData = doc.data();
-                else this.userData = { role: 'user', status: 'pending', name: this.currentUser.email.split('@')[0] };
-                this.userRole = this.userData.role || 'user';
-                this.updateUserHeader();
-            },
-
-            updateUserHeader() {
-                const name = this.userData?.name || this.currentUser?.email?.split('@')[0] || 'User';
-                document.getElementById('currentUserName').innerText = name;
-                document.getElementById('currentUserInitials').innerText = name.charAt(0).toUpperCase();
-            },
-
-            updateUIForRole() {
-                const isAdmin = this.userRole === 'admin';
-                document.querySelectorAll('.admin-only').forEach(el => el.classList.toggle('show', isAdmin));
-            },
-
-            showLogin() {
-                document.getElementById('loginModal').classList.remove('hidden');
-                document.getElementById('app').classList.add('hidden');
-                document.getElementById('realtimeIndicator').style.display = 'none';
-            },
-
-            showApp() {
-                document.getElementById('loginModal').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                document.getElementById('realtimeIndicator').style.display = 'flex';
-            },
-
-            async logout() {
-                this.stopRealtimeListeners();
-                await auth.signOut();
-                this.showLogin();
-            },
-
-            setupRealtimeListeners() {
-                this.stopRealtimeListeners();
-                const storageUnsub = db.collection('storage').onSnapshot(snap => {
-                    this.storage = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    this.renderWorkspace();
-                    this.updateStats();
-                });
-                const cylindersUnsub = db.collection('cylinders').where('archived', '==', false).onSnapshot(snap => {
-                    this.cylinders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    this.renderWorkspace();
-                    this.updateStats();
-                });
-                const archiveUnsub = db.collection('cylinders').where('archived', '==', true).onSnapshot(snap => {
-                    this.archivedCylinders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    this.renderArchive();
-                    this.updateStats();
-                });
-                this.realtimeListeners = [storageUnsub, cylindersUnsub, archiveUnsub];
-            },
-
-            stopRealtimeListeners() {
-                this.realtimeListeners.forEach(fn => fn());
-                this.realtimeListeners = [];
             },
 
             async loadData() {
@@ -867,7 +694,6 @@
                 const container = document.getElementById('storageContainer');
                 const freeContainer = document.getElementById('freeCylindersContainer');
                 const emptyDb = document.getElementById('emptyDatabase');
-                if (!container) return;
                 
                 if (this.storage.length === 0) {
                     container.innerHTML = '';
@@ -876,25 +702,25 @@
                     return;
                 }
                 emptyDb.classList.add('hidden');
-                if (this.archivedCylinders.length > 0) document.getElementById('archiveContainer').classList.remove('hidden');
+                if (this.archivedCylinders.length > 0) {
+                    document.getElementById('archiveContainer').classList.remove('hidden');
+                }
                 
-                const sorted = [...this.storage].sort((a,b) => (a.order||0) - (b.order||0));
                 container.innerHTML = '';
-                sorted.forEach(s => container.appendChild(this.createStorageElement(s)));
+                this.storage.forEach(storage => {
+                    container.appendChild(this.createStorageElement(storage));
+                });
                 this.renderFreeCylinders();
-                this.setupDragAndDrop();
-                if (this.isArrangeMode) this.setupArrangeMode();
             },
 
             createStorageElement(storage) {
                 const div = document.createElement('div');
-                div.className = `storage-item ${storage.type === 'Шкаф' ? 'closet' : ''}`;
+                div.className = 'storage-item';
                 div.dataset.storageId = storage.id;
+                
                 const cylindersInStorage = this.cylinders.filter(c => c.storageId === storage.id);
                 const full = cylindersInStorage.filter(c => c.status === 'Полный').length;
                 const empty = cylindersInStorage.filter(c => c.status === 'Пустой').length;
-                const today = new Date();
-                const expired = cylindersInStorage.filter(c => c.nextInspectionDate && new Date(c.nextInspectionDate) < today).length;
                 
                 div.innerHTML = `
                     <div class="storage-header">
@@ -904,9 +730,10 @@
                             <button class="btn btn-small" onclick="App.deleteStorage('${storage.id}')">🗑️</button>
                         </div>
                     </div>
-                    <div style="font-size:12px; margin-bottom:8px;">Баллонов: ${cylindersInStorage.length}/${storage.capacity} | Полных: ${full} | Пустых: ${empty} ${expired ? `⚠️ ${expired}` : ''}</div>
+                    <div style="font-size:12px; margin-bottom:8px;">Баллонов: ${cylindersInStorage.length}/${storage.capacity} | Полных: ${full} | Пустых: ${empty}</div>
                     <div class="slots-grid" id="slots-${storage.id}"></div>
                 `;
+                
                 const slotsGrid = div.querySelector(`#slots-${storage.id}`);
                 for (let i = 0; i < storage.capacity; i++) {
                     const slot = document.createElement('div');
@@ -925,15 +752,17 @@
 
             createCylinderHTML(cylinder) {
                 let gasClass = '';
-                const gasMap = { 'Кислород':'oxygen','Азот':'nitrogen','Аргон':'argon','Гелий':'helium','Ацетилен':'acetylene','Водород':'hydrogen','Метан':'methane','Углекислый газ':'carbon-dioxide' };
-                gasClass = gasMap[cylinder.gasType] || '';
-                const isExpired = cylinder.nextInspectionDate && new Date(cylinder.nextInspectionDate) < new Date();
-                const statusClass = isExpired ? 'expired' : (cylinder.status === 'Полный' ? 'full' : 'empty');
+                if (cylinder.gasType === 'Кислород') gasClass = 'oxygen';
+                else if (cylinder.gasType === 'Азот') gasClass = 'nitrogen';
+                else if (cylinder.gasType === 'Аргон') gasClass = 'argon';
+                else if (cylinder.gasType === 'Гелий') gasClass = 'helium';
+                
+                const statusClass = cylinder.status === 'Полный' ? 'full' : 'empty';
                 return `
-                    <div class="cylinder ${gasClass}" data-cylinder-id="${cylinder.id}" onclick="App.viewCylinder('${cylinder.id}')">
+                    <div class="cylinder ${gasClass}" onclick="App.viewCylinder('${cylinder.id}')">
                         <div class="cylinder-header">
                             <span class="cylinder-number">${cylinder.number}</span>
-                            <span class="cylinder-status ${statusClass}">${cylinder.status === 'Полный' ? 'Полн' : 'Пуст'}${isExpired ? ' ⚠️' : ''}</span>
+                            <span class="cylinder-status ${statusClass}">${cylinder.status === 'Полный' ? 'Полн' : 'Пуст'}</span>
                         </div>
                         <div class="cylinder-gas">${cylinder.gasType}</div>
                         <div class="cylinder-actions">
@@ -949,6 +778,7 @@
                 const container = document.getElementById('freeCylindersContainer');
                 const list = document.getElementById('freeCylindersList');
                 const badge = document.getElementById('freeCylindersBadge');
+                
                 if (free.length === 0) {
                     container.classList.add('hidden');
                     return;
@@ -959,61 +789,20 @@
                 free.forEach(cyl => {
                     const div = document.createElement('div');
                     div.className = 'free-cylinder';
-                    div.setAttribute('draggable', 'true');
-                    div.setAttribute('data-cylinder-id', cyl.id);
                     div.innerHTML = `<strong>${cyl.number}</strong><br>${cyl.gasType}<br>${cyl.status}`;
                     list.appendChild(div);
                 });
             },
 
-            setupDragAndDrop() {
-                // Настройка drag для свободных баллонов
-                document.querySelectorAll('.free-cylinder').forEach(el => {
-                    el.ondragstart = (e) => {
-                        this.draggingCylinder = el.dataset.cylinderId;
-                        e.dataTransfer.setData('text/plain', this.draggingCylinder);
-                        e.dataTransfer.effectAllowed = 'move';
-                    };
-                    el.ondragend = () => this.draggingCylinder = null;
-                });
-                
-                // Настройка drop зон
-                const dropZone = document.getElementById('globalDropZone');
-                dropZone.ondragover = e => e.preventDefault();
-                dropZone.ondrop = async (e) => {
-                    e.preventDefault();
-                    if (this.draggingCylinder) await this.moveCylinderToFree(this.draggingCylinder);
-                };
-                
-                // Слоты для drop
-                document.querySelectorAll('.slot').forEach(slot => {
-                    slot.ondragover = e => e.preventDefault();
-                    slot.ondrop = async (e) => {
-                        e.preventDefault();
-                        const storageId = slot.closest('.storage-item')?.dataset.storageId;
-                        const slotIndex = Array.from(slot.parentNode.children).indexOf(slot);
-                        if (this.draggingCylinder && storageId !== undefined) {
-                            await this.moveCylinderToSlot(this.draggingCylinder, storageId, slotIndex);
-                        }
-                    };
-                });
-            },
-
-            async moveCylinderToSlot(cylinderId, storageId, position) {
-                await db.collection('cylinders').doc(cylinderId).update({ storageId, position, lastMoved: new Date() });
-                this.showNotification('Баллон перемещен');
-            },
-
-            async moveCylinderToFree(cylinderId) {
-                await db.collection('cylinders').doc(cylinderId).update({ storageId: null, position: null });
-                this.showNotification('Баллон освобожден');
-            },
-
             async assignCylinderToSlot(storageId, slotIndex) {
                 const freeCylinders = this.cylinders.filter(c => !c.storageId);
-                if (freeCylinders.length === 0) return this.showNotification('Нет свободных баллонов', 'warning');
+                if (freeCylinders.length === 0) {
+                    this.showNotification('Нет свободных баллонов', 'warning');
+                    return;
+                }
                 const cylinder = freeCylinders[0];
-                await this.moveCylinderToSlot(cylinder.id, storageId, slotIndex);
+                await db.collection('cylinders').doc(cylinder.id).update({ storageId, position: slotIndex });
+                this.showNotification('Баллон добавлен в хранилище');
             },
 
             async toggleCylinderStatus(cylinderId) {
@@ -1032,44 +821,36 @@
 
             async confirmArchive() {
                 const reason = document.getElementById('archiveReason').value;
-                if (!reason) return this.showError('archiveError', 'Выберите причину');
                 await db.collection('cylinders').doc(this.cylinderToArchive.id).update({
-                    archived: true, archiveReason: reason, archivedAt: new Date(), archivedBy: this.currentUser.email
+                    archived: true, archiveReason: reason, archivedAt: new Date()
                 });
                 this.hideModal('archiveCylinderModal');
                 this.showNotification('Баллон архивирован');
             },
 
             async restoreFromArchive(cylinderId) {
-                await db.collection('cylinders').doc(cylinderId).update({ archived: false, archiveReason: null, archivedAt: null });
+                await db.collection('cylinders').doc(cylinderId).update({ archived: false });
                 this.showNotification('Баллон восстановлен');
-            },
-
-            async permanentDelete(cylinderId) {
-                if (confirm('Удалить навсегда?')) {
-                    await db.collection('cylinders').doc(cylinderId).delete();
-                    this.showNotification('Баллон удален');
-                }
             },
 
             renderArchive() {
                 const tbody = document.getElementById('archiveTableBody');
                 const countSpan = document.getElementById('archiveCount');
                 const archivedSpan = document.getElementById('archivedCount');
-                if (!tbody) return;
                 countSpan.innerText = this.archivedCylinders.length;
                 archivedSpan.innerText = this.archivedCylinders.length;
+                
                 if (this.archivedCylinders.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5">Архив пуст</td></tr>';
                     return;
                 }
                 tbody.innerHTML = this.archivedCylinders.map(c => `
                     <tr>
-                        <td>${c.number}</td><td>${c.gasType}</td>
+                        <td>${c.number}</td>
+                        <td>${c.gasType}</td>
                         <td>${c.archivedAt?.toDate?.().toLocaleString() || ''}</td>
                         <td>${c.archiveReason || ''}</td>
-                        <td><button class="btn btn-small" onclick="App.restoreFromArchive('${c.id}')">Восстановить</button>
-                        <button class="btn btn-small btn-danger" onclick="App.permanentDelete('${c.id}')">Удалить</button></td>
+                        <td><button class="btn btn-small" onclick="App.restoreFromArchive('${c.id}')">Восстановить</button></td>
                     </tr>
                 `).join('');
             },
@@ -1083,26 +864,15 @@
                 document.getElementById('totalCylinders').innerText = this.cylinders.length + this.archivedCylinders.length;
                 document.getElementById('fullCylinders').innerText = this.cylinders.filter(c => c.status === 'Полный').length;
                 document.getElementById('emptyCylinders').innerText = this.cylinders.filter(c => c.status === 'Пустой').length;
-                const today = new Date();
-                document.getElementById('expiredCylinders').innerText = this.cylinders.filter(c => c.nextInspectionDate && new Date(c.nextInspectionDate) < today).length;
                 document.getElementById('totalStorage').innerText = this.storage.length;
                 document.getElementById('archivedCount').innerText = this.archivedCylinders.length;
             },
 
             async showAddCylinder() {
-                this.editingCylinderId = null;
-                document.getElementById('cylinderModalTitle').innerText = 'Добавить баллон';
                 document.getElementById('cylinderNumber').value = `Б-${Math.floor(Math.random()*9000+1000)}`;
                 document.getElementById('deliveryDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('manufactureDate').value = new Date().toISOString().split('T')[0];
                 const nextYear = new Date(); nextYear.setFullYear(nextYear.getFullYear()+1);
                 document.getElementById('nextInspectionDate').value = nextYear.toISOString().split('T')[0];
-                document.getElementById('cylinderStatus').value = 'Полный';
-                document.getElementById('workingPressure').value = '150';
-                document.getElementById('testPressure').value = '225';
-                document.getElementById('capacity').value = '40';
-                document.getElementById('supplier').value = 'ООО ГазСнаб';
-                document.getElementById('notes').value = '';
                 this.showModal('addCylinderModal');
             },
 
@@ -1111,78 +881,29 @@
                     number: document.getElementById('cylinderNumber').value,
                     gasType: document.getElementById('cylinderGasType').value,
                     deliveryDate: document.getElementById('deliveryDate').value,
-                    manufactureDate: document.getElementById('manufactureDate').value,
                     nextInspectionDate: document.getElementById('nextInspectionDate').value,
                     status: document.getElementById('cylinderStatus').value,
-                    workingPressure: parseFloat(document.getElementById('workingPressure').value),
-                    testPressure: parseFloat(document.getElementById('testPressure').value),
-                    capacity: parseFloat(document.getElementById('capacity').value),
-                    supplier: document.getElementById('supplier').value,
-                    notes: document.getElementById('notes').value,
-                    updatedAt: new Date()
+                    capacity: parseInt(document.getElementById('capacity').value),
+                    archived: false, storageId: null, position: null,
+                    createdAt: new Date(), createdBy: this.currentUser.email
                 };
-                if (this.editingCylinderId) {
-                    await db.collection('cylinders').doc(this.editingCylinderId).update(data);
-                    this.showNotification('Баллон обновлен');
-                } else {
-                    await db.collection('cylinders').add({ ...data, archived: false, storageId: null, position: null, createdAt: new Date(), createdBy: this.currentUser.email });
-                    this.showNotification('Баллон добавлен');
-                }
+                await db.collection('cylinders').add(data);
                 this.hideModal('addCylinderModal');
-            },
-
-            async viewCylinder(cylinderId) {
-                const cylinder = this.cylinders.find(c => c.id === cylinderId);
-                if (!cylinder) return;
-                this.editingCylinderId = cylinderId;
-                document.getElementById('viewCylinderNumber').innerText = cylinder.number;
-                document.getElementById('viewNumber').value = cylinder.number;
-                document.getElementById('viewGasType').value = cylinder.gasType;
-                document.getElementById('viewStatus').value = cylinder.status;
-                const storage = this.storage.find(s => s.id === cylinder.storageId);
-                document.getElementById('viewStorageLocation').value = storage ? storage.name : 'Свободный';
-                this.showModal('viewCylinderModal');
-            },
-
-            editCylinderFromView() {
-                this.hideModal('viewCylinderModal');
-                const cylinder = this.cylinders.find(c => c.id === this.editingCylinderId);
-                if (cylinder) {
-                    document.getElementById('cylinderNumber').value = cylinder.number;
-                    document.getElementById('cylinderGasType').value = cylinder.gasType;
-                    document.getElementById('deliveryDate').value = cylinder.deliveryDate || '';
-                    document.getElementById('manufactureDate').value = cylinder.manufactureDate || '';
-                    document.getElementById('nextInspectionDate').value = cylinder.nextInspectionDate || '';
-                    document.getElementById('cylinderStatus').value = cylinder.status;
-                    document.getElementById('workingPressure').value = cylinder.workingPressure || 150;
-                    document.getElementById('testPressure').value = cylinder.testPressure || 225;
-                    document.getElementById('capacity').value = cylinder.capacity || 40;
-                    document.getElementById('supplier').value = cylinder.supplier || '';
-                    document.getElementById('notes').value = cylinder.notes || '';
-                    document.getElementById('cylinderModalTitle').innerText = 'Редактировать баллон';
-                    this.showModal('addCylinderModal');
-                }
+                this.showNotification('Баллон добавлен');
             },
 
             async showAddStorage() {
                 document.getElementById('storageName').value = '';
-                document.getElementById('storageType').value = 'Кабинет';
-                document.getElementById('storageCapacity').value = '10';
-                document.getElementById('storageLocation').value = '';
-                document.getElementById('storageDescription').value = '';
                 this.showModal('addStorageModal');
             },
 
             async saveStorage() {
                 const name = document.getElementById('storageName').value;
-                if (!name) return this.showError('storageError', 'Введите название');
-                const maxOrder = Math.max(...this.storage.map(s => s.order || 0), 0);
+                if (!name) return;
                 await db.collection('storage').add({
                     name, type: document.getElementById('storageType').value,
                     capacity: parseInt(document.getElementById('storageCapacity').value),
-                    location: document.getElementById('storageLocation').value,
-                    description: document.getElementById('storageDescription').value,
-                    order: maxOrder + 1, createdAt: new Date(), createdBy: this.currentUser.email
+                    createdAt: new Date(), createdBy: this.currentUser.email
                 });
                 this.hideModal('addStorageModal');
                 this.showNotification('Хранилище добавлено');
@@ -1190,75 +911,24 @@
 
             async editStorage(storageId) {
                 const storage = this.storage.find(s => s.id === storageId);
-                if (!storage) return;
                 const newName = prompt('Новое название:', storage.name);
                 if (newName) await db.collection('storage').doc(storageId).update({ name: newName });
             },
 
             async deleteStorage(storageId) {
-                const storage = this.storage.find(s => s.id === storageId);
                 const cylindersIn = this.cylinders.filter(c => c.storageId === storageId);
-                if (cylindersIn.length > 0 && !confirm(`В хранилище ${cylindersIn.length} баллонов. Освободить их и удалить хранилище?`)) return;
-                for (const cyl of cylindersIn) await db.collection('cylinders').doc(cyl.id).update({ storageId: null, position: null });
+                if (cylindersIn.length > 0 && !confirm(`В хранилище ${cylindersIn.length} баллонов. Удалить?`)) return;
+                for (const cyl of cylindersIn) {
+                    await db.collection('cylinders').doc(cyl.id).update({ storageId: null, position: null });
+                }
                 await db.collection('storage').doc(storageId).delete();
                 this.showNotification('Хранилище удалено');
             },
 
-            toggleArrangeMode() {
-                this.isArrangeMode = !this.isArrangeMode;
-                const container = document.getElementById('storageContainer');
-                container.classList.toggle('arrange-mode', this.isArrangeMode);
-                if (this.isArrangeMode) this.setupArrangeMode();
-            },
-
-            setupArrangeMode() {
-                const items = document.querySelectorAll('.storage-item');
-                items.forEach(item => {
-                    item.setAttribute('draggable', 'true');
-                    item.ondragstart = (e) => {
-                        item.classList.add('dragging');
-                        e.dataTransfer.setData('text/plain', item.dataset.storageId);
-                    };
-                    item.ondragend = () => item.classList.remove('dragging');
-                });
-                const container = document.getElementById('storageContainer');
-                container.ondragover = e => e.preventDefault();
-                container.ondrop = async (e) => {
-                    e.preventDefault();
-                    const storageId = e.dataTransfer.getData('text/plain');
-                    const dragged = document.querySelector(`.storage-item[data-storage-id="${storageId}"]`);
-                    const after = this.getDragAfterElement(container, e.clientY);
-                    if (after) container.insertBefore(dragged, after);
-                    else container.appendChild(dragged);
-                    await this.updateAllStorageOrders();
-                };
-            },
-
-            getDragAfterElement(container, y) {
-                const draggable = [...container.querySelectorAll('.storage-item:not(.dragging)')];
-                return draggable.reduce((closest, child) => {
-                    const box = child.getBoundingClientRect();
-                    const offset = y - box.top - box.height / 2;
-                    if (offset < 0 && offset > closest.offset) return { offset, element: child };
-                    return closest;
-                }, { offset: Number.NEGATIVE_INFINITY }).element;
-            },
-
-            async updateAllStorageOrders() {
-                const items = document.querySelectorAll('.storage-item');
-                const batch = db.batch();
-                items.forEach((item, idx) => {
-                    const ref = db.collection('storage').doc(item.dataset.storageId);
-                    batch.update(ref, { order: idx + 1 });
-                });
-                await batch.commit();
-                this.showNotification('Порядок сохранен');
-            },
-
             async quickExportExcel() {
                 const wb = XLSX.utils.book_new();
-                const cylindersData = this.cylinders.map(c => ({ Номер: c.number, Газ: c.gasType, Статус: c.status }));
-                const sheet = XLSX.utils.json_to_sheet(cylindersData);
+                const data = this.cylinders.map(c => ({ Номер: c.number, Газ: c.gasType, Статус: c.status }));
+                const sheet = XLSX.utils.json_to_sheet(data);
                 XLSX.utils.book_append_sheet(wb, sheet, 'Баллоны');
                 XLSX.writeFile(wb, `баллоны_${new Date().toISOString().split('T')[0]}.xlsx`);
                 this.showNotification('Excel создан');
@@ -1272,11 +942,11 @@
                 usersSnap.forEach(doc => {
                     const u = doc.data();
                     const div = document.createElement('div');
-                    div.className = 'cylinder-option';
+                    div.style.padding = '10px';
+                    div.style.borderBottom = '1px solid #ddd';
                     div.innerHTML = `
                         <div><strong>${u.email}</strong> (${u.role}) - ${u.status}
-                        <button class="btn btn-small" onclick="App.approveUser('${doc.id}')">✅</button>
-                        <button class="btn btn-small btn-danger" onclick="App.banUser('${doc.id}')">⛔</button>
+                        <button class="btn btn-small" onclick="App.approveUser('${doc.id}')">✅ Активировать</button>
                         </div>
                     `;
                     usersList.appendChild(div);
@@ -1285,15 +955,13 @@
             },
 
             async approveUser(userId) {
-                await db.collection('users').doc(userId).update({ status: 'active', role: 'user' });
+                await db.collection('users').doc(userId).update({ status: 'active' });
                 this.showNotification('Пользователь активирован');
                 this.showUsersModal();
             },
 
-            async banUser(userId) {
-                await db.collection('users').doc(userId).update({ status: 'banned' });
-                this.showNotification('Пользователь заблокирован');
-                this.showUsersModal();
+            viewCylinder(cylinderId) {
+                this.showNotification('Просмотр баллона');
             },
 
             showModal(id) { document.getElementById(id).classList.remove('hidden'); },
