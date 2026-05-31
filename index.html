@@ -72,13 +72,14 @@
         .user-info { display: flex; align-items: center; gap: 10px; }
         
         .container { display: flex; min-height: calc(100vh - 70px); }
-        .sidebar { width: 250px; background: white; padding: 20px; border-right: 1px solid #ddd; }
+        .sidebar { width: 280px; background: white; padding: 20px; border-right: 1px solid #ddd; }
         .sidebar-section { margin-bottom: 25px; }
         .sidebar-section h3 { margin-bottom: 15px; color: #2c3e50; font-size: 16px; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
         
         .stats { background: #f8f9fa; padding: 15px; border-radius: 8px; }
         .stat-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #333; }
         .stat-value { font-weight: bold; color: #2c3e50; }
+        .stat-divider { border-top: 1px solid #ddd; margin: 8px 0; padding-top: 5px; }
         
         .main-content { flex: 1; padding: 20px; overflow: auto; }
         .workspace-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -413,13 +414,19 @@
                 <div class="sidebar-section">
                     <h3>📊 Статистика</h3>
                     <div class="stats">
-                        <div class="stat-item"><span>Всего баллонов:</span><span id="totalCylinders" class="stat-value">0</span></div>
-                        <div class="stat-item"><span>Полные:</span><span id="fullCylinders" class="stat-value">0</span></div>
-                        <div class="stat-item"><span>Пустые:</span><span id="emptyCylinders" class="stat-value">0</span></div>
-                        <div class="stat-item"><span>Просроченные:</span><span id="expiredCylinders" class="stat-value">0</span></div>
-                        <div class="stat-item"><span>Хранилищ:</span><span id="totalStorage" class="stat-value">0</span></div>
-                        <div class="stat-item"><span>В архиве:</span><span id="archivedCount" class="stat-value">0</span></div>
-                        <div class="stat-item"><span>Активных:</span><span id="activeUsers" class="stat-value">1</span></div>
+                        <div class="stat-item"><span>📦 Всего баллонов:</span><span id="totalCylinders" class="stat-value">0</span></div>
+                        <div class="stat-item"><span>✅ Полные:</span><span id="fullCylinders" class="stat-value">0</span></div>
+                        <div class="stat-item"><span>❌ Пустые:</span><span id="emptyCylinders" class="stat-value">0</span></div>
+                        <div class="stat-item"><span>⚠️ Просроченные:</span><span id="expiredCylinders" class="stat-value">0</span></div>
+                        <div class="stat-item"><span>🏪 Хранилищ:</span><span id="totalStorage" class="stat-value">0</span></div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item"><span>📁 В архиве:</span><span id="archivedCount" class="stat-value">0</span></div>
+                        <div class="stat-item"><span>📝 Списано:</span><span id="writtenOffCount" class="stat-value">0</span></div>
+                        <div class="stat-item"><span>🔄 Обменено:</span><span id="exchangedCount" class="stat-value">0</span></div>
+                        <div class="stat-item"><span>🔧 Брак:</span><span id="defectCount" class="stat-value">0</span></div>
+                        <div class="stat-item"><span>♻️ Утилизировано:</span><span id="utilizedCount" class="stat-value">0</span></div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item"><span>👥 Активных:</span><span id="activeUsers" class="stat-value">1</span></div>
                     </div>
                 </div>
 
@@ -470,7 +477,20 @@
                         <span style="color: #666;">▼</span>
                     </div>
                     <div class="archive-content" id="archiveContent">
-                        <table class="archive-table"><thead><tr><th>Номер</th><th>Газ</th><th>Дата удаления</th><th>Причина</th><th>Удалил</th><th>Комментарий</th><th>Действия</th></tr></thead><tbody id="archiveTableBody"></tbody></table>
+                        <table class="archive-table">
+                            <thead>
+                                <tr>
+                                    <th>Номер</th>
+                                    <th>Газ</th>
+                                    <th>Дата удаления</th>
+                                    <th>Причина</th>
+                                    <th>Удалил</th>
+                                    <th>Комментарий</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archiveTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -1196,12 +1216,10 @@
                 this.showNotification(`Статус изменен на ${newStatus}`);
             },
 
-            // ========== ОБНОВЛЕННЫЙ МЕТОД АРХИВАЦИИ С ВЫБОРОМ ПРИЧИНЫ ==========
             async archiveCylinder(cylinderId) {
                 const cylinder = this.cylinders.find(c => c.id === cylinderId);
                 if (!cylinder) return;
                 
-                // Создаем модальное окно для выбора причины
                 const modal = document.createElement('div');
                 modal.className = 'modal';
                 modal.innerHTML = `
@@ -1239,7 +1257,6 @@
                 
                 document.body.appendChild(modal);
                 
-                // Обработчики
                 document.getElementById('confirmArchiveBtn').onclick = async () => {
                     const reason = document.getElementById('archiveReasonSelect').value;
                     const comment = document.getElementById('archiveCommentText').value.trim();
@@ -1275,7 +1292,6 @@
                     modal.remove();
                 };
                 
-                // Закрытие по клику вне окна
                 modal.onclick = (e) => {
                     if (e.target === modal) modal.remove();
                 };
@@ -1401,24 +1417,42 @@
                 const tbody = document.getElementById('archiveTableBody');
                 const count = document.getElementById('archiveCount');
                 const archivedSpan = document.getElementById('archivedCount');
+                
                 if (count) count.textContent = this.archivedCylinders.length;
                 if (archivedSpan) archivedSpan.textContent = this.archivedCylinders.length;
                 if (!tbody) return;
+                
                 if (this.archivedCylinders.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">Архив пуст</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">📭 Архив пуст</td></tr>';
                     return;
                 }
+                
                 tbody.innerHTML = this.archivedCylinders.map(c => `
                     <tr>
-                        <td>${this.escapeHtml(c.number)}</td>
-                        <td>${c.gasType}</td>
-                        <td>${c.archivedAt?.toDate?.().toLocaleString() || ''}</td>
-                        <td>${c.archiveReason || ''}</td>
-                        <td>${c.archivedBy || ''}</td>
-                        <td>${c.archiveComment || ''}</td>
-                        <td><button class="btn btn-small" onclick="App.restoreFromArchive('${c.id}')">Восстановить</button></td>
+                        <td style="padding: 8px;">${this.escapeHtml(c.number)}</td>
+                        <td style="padding: 8px;">${c.gasType}</td>
+                        <td style="padding: 8px;">${c.archivedAt?.toDate?.().toLocaleString() || ''}</td>
+                        <td style="padding: 8px;">${this.getArchiveReasonIcon(c.archiveReason)} ${c.archiveReason || '-'}</td>
+                        <td style="padding: 8px;">${c.archivedBy || '-'}</td>
+                        <td style="padding: 8px;">${c.archiveComment || '-'}</td>
+                        <td style="padding: 8px;">
+                            <button class="btn btn-small btn-success" onclick="App.restoreFromArchive('${c.id}')" style="margin-right: 5px;">🔄 Восстановить</button>
+                            <button class="btn btn-small btn-danger" onclick="App.permanentDelete('${c.id}')">🗑️ Удалить навсегда</button>
+                        </td>
                     </tr>
                 `).join('');
+            },
+
+            getArchiveReasonIcon(reason) {
+                switch(reason) {
+                    case 'Списание': return '📝';
+                    case 'Брак': return '🔧';
+                    case 'Утилизация': return '♻️';
+                    case 'Обмен': return '🔄';
+                    case 'Повреждение': return '💥';
+                    case 'Истек срок службы': return '⏰';
+                    default: return '❓';
+                }
             },
 
             async restoreFromArchive(id) {
@@ -1427,14 +1461,48 @@
                 this.showNotification('Баллон восстановлен');
             },
 
+            async permanentDelete(cylinderId) {
+                const cylinder = this.archivedCylinders.find(c => c.id === cylinderId);
+                if (!cylinder) return;
+                
+                const confirmDelete = confirm(`⚠️ ВНИМАНИЕ!\n\nВы уверены, что хотите навсегда удалить баллон ${cylinder.number} (${cylinder.gasType})?\n\n📅 Дата удаления: ${cylinder.archivedAt?.toDate?.().toLocaleString() || 'неизвестна'}\n📋 Причина: ${cylinder.archiveReason || 'не указана'}\n\nЭто действие НЕЛЬЗЯ отменить!`);
+                if (!confirmDelete) return;
+                
+                try {
+                    await db.collection('cylinders').doc(cylinderId).delete();
+                    this.showNotification(`✅ Баллон ${cylinder.number} удален навсегда`);
+                    this.loadData();
+                } catch (error) {
+                    console.error('Ошибка удаления:', error);
+                    this.showNotification('❌ Ошибка удаления', 'error');
+                }
+            },
+
             updateStats() {
-                document.getElementById('totalCylinders').textContent = this.cylinders.length + this.archivedCylinders.length;
-                document.getElementById('fullCylinders').textContent = this.cylinders.filter(c => c.status === 'Полный').length;
-                document.getElementById('emptyCylinders').textContent = this.cylinders.filter(c => c.status === 'Пустой').length;
+                // Основные показатели
+                const totalCylinders = this.cylinders.length + this.archivedCylinders.length;
+                const fullCylinders = this.cylinders.filter(c => c.status === 'Полный').length;
+                const emptyCylinders = this.cylinders.filter(c => c.status === 'Пустой').length;
+                const expired = this.cylinders.filter(c => c.nextInspectionDate && new Date(c.nextInspectionDate) < new Date()).length;
+                
+                document.getElementById('totalCylinders').textContent = totalCylinders;
+                document.getElementById('fullCylinders').textContent = fullCylinders;
+                document.getElementById('emptyCylinders').textContent = emptyCylinders;
+                document.getElementById('expiredCylinders').textContent = expired;
                 document.getElementById('totalStorage').textContent = this.storage.length;
                 document.getElementById('totalCylindersBadge').textContent = this.cylinders.length;
-                const expired = this.cylinders.filter(c => c.nextInspectionDate && new Date(c.nextInspectionDate) < new Date()).length;
-                document.getElementById('expiredCylinders').textContent = expired;
+                document.getElementById('archivedCount').textContent = this.archivedCylinders.length;
+                
+                // Статистика по причинам списания
+                const writtenOff = this.archivedCylinders.filter(c => c.archiveReason === 'Списание').length;
+                const exchanged = this.archivedCylinders.filter(c => c.archiveReason === 'Обмен').length;
+                const defect = this.archivedCylinders.filter(c => c.archiveReason === 'Брак').length;
+                const utilized = this.archivedCylinders.filter(c => c.archiveReason === 'Утилизация').length;
+                
+                document.getElementById('writtenOffCount').textContent = writtenOff;
+                document.getElementById('exchangedCount').textContent = exchanged;
+                document.getElementById('defectCount').textContent = defect;
+                document.getElementById('utilizedCount').textContent = utilized;
             },
 
             async showUsersModal() {
