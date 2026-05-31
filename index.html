@@ -10,7 +10,7 @@
         .hidden { display: none !important; }
         
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 500px; }
+        .modal-content { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
         .modal h2 { margin-bottom: 20px; color: #2c3e50; }
         
         .form-group { margin-bottom: 15px; }
@@ -26,6 +26,8 @@
         .btn-success:hover { background: #229954; }
         .btn-danger { background: #e74c3c; color: white; }
         .btn-danger:hover { background: #c0392b; }
+        .btn-warning { background: #f39c12; color: white; }
+        .btn-warning:hover { background: #e67e22; }
         .btn-block { width: 100%; margin-bottom: 10px; }
         .btn-small { padding: 4px 8px; font-size: 12px; }
         
@@ -73,6 +75,7 @@
         .free-cylinder { background: white; padding: 10px; border-radius: 8px; border-left: 4px solid; min-width: 130px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         
         .error-message { background: #fadbd8; color: #e74c3c; padding: 10px; border-radius: 6px; margin-top: 10px; }
+        .success-message { background: #d5f4e6; color: #27ae60; padding: 10px; border-radius: 6px; margin-top: 10px; }
         .notification { position: fixed; top: 20px; right: 20px; background: #2ecc71; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1001; animation: slideIn 0.3s ease; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
         .notification.error { background: #e74c3c; }
         
@@ -84,7 +87,7 @@
         .user-menu { position: relative; display: inline-block; }
         .user-menu-btn { background: #34495e; padding: 8px 12px; border-radius: 20px; cursor: pointer; display: flex; gap: 8px; align-items: center; transition: background 0.2s; }
         .user-menu-btn:hover { background: #3d566e; }
-        .user-menu-dropdown { position: absolute; top: 100%; right: 0; background: white; min-width: 180px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: none; z-index: 1000; }
+        .user-menu-dropdown { position: absolute; top: 100%; right: 0; background: white; min-width: 200px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: none; z-index: 1000; }
         .user-menu-dropdown.show { display: block; }
         .user-menu-item { padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee; color: #2c3e50; }
         .user-menu-item:hover { background: #f8f9fa; }
@@ -97,6 +100,10 @@
         
         .gas-icon { font-size: 16px; }
         .welcome-screen { text-align: center; padding: 50px; }
+        
+        .reset-link { text-align: center; margin-top: 15px; }
+        .reset-link a { color: #3498db; text-decoration: none; font-size: 12px; cursor: pointer; }
+        .reset-link a:hover { text-decoration: underline; }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -121,8 +128,27 @@
             </div>
             <button id="loginBtn" class="btn btn-primary">Войти</button>
             <button id="registerBtn" class="btn btn-secondary" style="margin-top: 10px;">Зарегистрироваться</button>
+            <div class="reset-link">
+                <a id="forgotPasswordLink">Забыли пароль?</a>
+            </div>
             <div id="loginError" class="error-message hidden"></div>
+            <div id="loginSuccess" class="success-message hidden"></div>
             <div id="firstAdminContainer" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <!-- Модальное окно сброса пароля -->
+    <div id="resetModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>🔐 Сброс пароля</h2>
+            <div class="form-group">
+                <label>Введите ваш email:</label>
+                <input type="email" id="resetEmail" placeholder="your@email.com">
+            </div>
+            <button id="sendResetBtn" class="btn btn-primary">Отправить ссылку для сброса</button>
+            <button id="cancelResetBtn" class="btn btn-secondary" style="margin-top: 10px;">Отмена</button>
+            <div id="resetError" class="error-message hidden"></div>
+            <div id="resetSuccess" class="success-message hidden"></div>
         </div>
     </div>
 
@@ -136,6 +162,7 @@
                     <span>▼</span>
                 </div>
                 <div class="user-menu-dropdown" id="userMenuDropdown">
+                    <div class="user-menu-item" onclick="App.changePassword()">🔑 Сменить пароль</div>
                     <div class="user-menu-item" onclick="App.logout()">🚪 Выйти</div>
                 </div>
             </div>
@@ -191,6 +218,29 @@
         </div>
     </div>
 
+    <!-- Модальное окно смены пароля -->
+    <div id="changePasswordModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>🔑 Смена пароля</h2>
+            <div class="form-group">
+                <label>Текущий пароль:</label>
+                <input type="password" id="oldPassword" placeholder="Введите текущий пароль">
+            </div>
+            <div class="form-group">
+                <label>Новый пароль (мин. 6 символов):</label>
+                <input type="password" id="newPassword" placeholder="Введите новый пароль">
+            </div>
+            <div class="form-group">
+                <label>Подтвердите новый пароль:</label>
+                <input type="password" id="confirmPassword" placeholder="Подтвердите новый пароль">
+            </div>
+            <button id="changePasswordSubmitBtn" class="btn btn-primary">Сменить пароль</button>
+            <button id="cancelChangePasswordBtn" class="btn btn-secondary" style="margin-top: 10px;">Отмена</button>
+            <div id="changePasswordError" class="error-message hidden"></div>
+            <div id="changePasswordSuccess" class="success-message hidden"></div>
+        </div>
+    </div>
+
     <script>
         // Firebase конфигурация для проекта gas-cylinders-manager
         const firebaseConfig = {
@@ -214,7 +264,6 @@
 
             async init() {
                 console.log("Gas Manager App initialized");
-                console.log("Project: gas-cylinders-manager");
                 this.setupEventListeners();
                 await this.checkForFirstAdmin();
                 
@@ -236,11 +285,16 @@
             setupEventListeners() {
                 document.getElementById('loginBtn').onclick = () => this.login();
                 document.getElementById('registerBtn').onclick = () => this.register();
+                document.getElementById('forgotPasswordLink').onclick = () => this.showResetModal();
+                document.getElementById('sendResetBtn').onclick = () => this.resetPassword();
+                document.getElementById('cancelResetBtn').onclick = () => this.hideResetModal();
                 document.getElementById('addCylinderBtn').onclick = () => this.showAddCylinder();
                 document.getElementById('addStorageBtn').onclick = () => this.showAddStorage();
                 document.getElementById('firstStorageBtn').onclick = () => this.showAddStorage();
                 document.getElementById('addFirstCylinderBtn').onclick = () => this.showAddCylinder();
                 document.getElementById('refreshBtn').onclick = () => this.loadData();
+                document.getElementById('changePasswordSubmitBtn').onclick = () => this.changePasswordSubmit();
+                document.getElementById('cancelChangePasswordBtn').onclick = () => this.hideChangePasswordModal();
                 
                 const userMenuBtn = document.getElementById('userMenuBtn');
                 const dropdown = document.getElementById('userMenuDropdown');
@@ -250,6 +304,104 @@
                         dropdown.classList.toggle('show');
                     };
                     document.onclick = () => dropdown.classList.remove('show');
+                }
+            },
+
+            showResetModal() {
+                document.getElementById('resetModal').classList.remove('hidden');
+                document.getElementById('resetEmail').value = '';
+                document.getElementById('resetError').classList.add('hidden');
+                document.getElementById('resetSuccess').classList.add('hidden');
+            },
+
+            hideResetModal() {
+                document.getElementById('resetModal').classList.add('hidden');
+            },
+
+            async resetPassword() {
+                const email = document.getElementById('resetEmail').value;
+                const errorDiv = document.getElementById('resetError');
+                const successDiv = document.getElementById('resetSuccess');
+                
+                if (!email) {
+                    errorDiv.innerText = 'Введите email';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                try {
+                    errorDiv.classList.add('hidden');
+                    await auth.sendPasswordResetEmail(email);
+                    successDiv.innerText = 'Ссылка для сброса пароля отправлена на ваш email!';
+                    successDiv.classList.remove('hidden');
+                    setTimeout(() => {
+                        this.hideResetModal();
+                    }, 3000);
+                } catch(e) {
+                    errorDiv.innerText = this.getErrorMessage(e);
+                    errorDiv.classList.remove('hidden');
+                }
+            },
+
+            async changePassword() {
+                document.getElementById('changePasswordModal').classList.remove('hidden');
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                document.getElementById('changePasswordError').classList.add('hidden');
+                document.getElementById('changePasswordSuccess').classList.add('hidden');
+            },
+
+            hideChangePasswordModal() {
+                document.getElementById('changePasswordModal').classList.add('hidden');
+            },
+
+            async changePasswordSubmit() {
+                const oldPassword = document.getElementById('oldPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const errorDiv = document.getElementById('changePasswordError');
+                const successDiv = document.getElementById('changePasswordSuccess');
+                
+                if (!oldPassword || !newPassword) {
+                    errorDiv.innerText = 'Заполните все поля';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                if (newPassword.length < 6) {
+                    errorDiv.innerText = 'Новый пароль должен быть не менее 6 символов';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    errorDiv.innerText = 'Пароли не совпадают';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                try {
+                    errorDiv.classList.add('hidden');
+                    
+                    // Переаутентификация пользователя
+                    const credential = firebase.auth.EmailAuthProvider.credential(
+                        this.currentUser.email,
+                        oldPassword
+                    );
+                    await this.currentUser.reauthenticateWithCredential(credential);
+                    
+                    // Смена пароля
+                    await this.currentUser.updatePassword(newPassword);
+                    
+                    successDiv.innerText = 'Пароль успешно изменен!';
+                    successDiv.classList.remove('hidden');
+                    setTimeout(() => {
+                        this.hideChangePasswordModal();
+                    }, 2000);
+                } catch(e) {
+                    errorDiv.innerText = this.getErrorMessage(e);
+                    errorDiv.classList.remove('hidden');
                 }
             },
 
@@ -288,7 +440,7 @@
                     alert('Администратор создан! Теперь войдите.');
                     location.reload();
                 } catch(e) {
-                    alert('Ошибка: ' + e.message);
+                    alert('Ошибка: ' + this.getErrorMessage(e));
                 }
             },
 
@@ -307,7 +459,7 @@
                     errorDiv.classList.add('hidden');
                     await auth.signInWithEmailAndPassword(email, password);
                 } catch(e) {
-                    errorDiv.innerText = e.message;
+                    errorDiv.innerText = this.getErrorMessage(e);
                     errorDiv.classList.remove('hidden');
                 }
             },
@@ -334,7 +486,7 @@
                     });
                     this.showNotification('Регистрация успешна! Добро пожаловать в Gas Manager!');
                 } catch(e) {
-                    errorDiv.innerText = e.message;
+                    errorDiv.innerText = this.getErrorMessage(e);
                     errorDiv.classList.remove('hidden');
                 }
             },
@@ -359,7 +511,7 @@
                     this.updateStats();
                 } catch(e) {
                     console.error("Ошибка загрузки:", e);
-                    this.showNotification('Ошибка загрузки данных: ' + e.message, 'error');
+                    this.showNotification('Ошибка загрузки данных: ' + this.getErrorMessage(e), 'error');
                 } finally {
                     loading.classList.add('hidden');
                 }
@@ -514,7 +666,7 @@
                     this.showNotification(`✅ Баллон ${cylinder.number} добавлен в хранилище`);
                     await this.loadData();
                 } catch(e) {
-                    this.showNotification('Ошибка: ' + e.message, 'error');
+                    this.showNotification('Ошибка: ' + this.getErrorMessage(e), 'error');
                 }
             },
 
@@ -528,12 +680,14 @@
                     this.showNotification(`🔄 Статус баллона ${cylinder.number} изменен на ${newStatus}`);
                     await this.loadData();
                 } catch(e) {
-                    this.showNotification('Ошибка: ' + e.message, 'error');
+                    this.showNotification('Ошибка: ' + this.getErrorMessage(e), 'error');
                 }
             },
 
             async archiveCylinder(cylinderId) {
                 const cylinder = this.cylinders.find(c => c.id === cylinderId);
+                if (!cylinder) return;
+                
                 if (!confirm(`Переместить баллон ${cylinder.number} в архив?`)) return;
                 
                 try {
@@ -545,12 +699,14 @@
                     this.showNotification(`📦 Баллон ${cylinder.number} архивирован`);
                     await this.loadData();
                 } catch(e) {
-                    this.showNotification('Ошибка: ' + e.message, 'error');
+                    this.showNotification('Ошибка: ' + this.getErrorMessage(e), 'error');
                 }
             },
 
             async deleteStorage(storageId) {
                 const storage = this.storage.find(s => s.id === storageId);
+                if (!storage) return;
+                
                 const cylindersIn = this.cylinders.filter(c => c.storageId === storageId);
                 
                 if (cylindersIn.length > 0) {
@@ -569,8 +725,11 @@
                 if (!number) return;
                 
                 const gasType = prompt('Тип газа (Кислород/Азот/Аргон/Гелий):', 'Кислород');
-                if (!gasType || !['Кислород', 'Азот', 'Аргон', 'Гелий'].includes(gasType)) {
-                    alert('Пожалуйста, выберите корректный тип газа: Кислород, Азот, Аргон или Гелий');
+                if (!gasType) return;
+                
+                const validTypes = ['Кислород', 'Азот', 'Аргон', 'Гелий'];
+                if (!validTypes.includes(gasType)) {
+                    this.showNotification('Пожалуйста, выберите корректный тип газа: Кислород, Азот, Аргон или Гелий', 'error');
                     return;
                 }
                 
@@ -588,7 +747,8 @@
                     this.showNotification(`✅ Баллон ${number} (${gasType}) добавлен в систему`);
                     await this.loadData();
                 } catch(e) {
-                    this.showNotification('Ошибка: ' + e.message, 'error');
+                    this.showNotification('Ошибка: ' + this.getErrorMessage(e), 'error');
+                    console.error("Ошибка добавления баллона:", e);
                 }
             },
 
@@ -601,7 +761,7 @@
                 
                 const capacity = parseInt(prompt('Вместимость (количество баллонов):', '10'));
                 if (isNaN(capacity) || capacity < 1) {
-                    alert('Пожалуйста, введите корректное число (минимум 1)');
+                    this.showNotification('Пожалуйста, введите корректное число (минимум 1)', 'error');
                     return;
                 }
                 
@@ -615,7 +775,8 @@
                     this.showNotification(`✅ Хранилище "${name}" (${type}) добавлено. Вместимость: ${capacity} баллонов`);
                     await this.loadData();
                 } catch(e) {
-                    this.showNotification('Ошибка: ' + e.message, 'error');
+                    this.showNotification('Ошибка: ' + this.getErrorMessage(e), 'error');
+                    console.error("Ошибка добавления хранилища:", e);
                 }
             },
 
@@ -630,7 +791,24 @@
                 document.getElementById('totalStorage').innerText = this.storage.length;
             },
 
+            getErrorMessage(error) {
+                const errorMessages = {
+                    'auth/user-not-found': 'Пользователь не найден',
+                    'auth/wrong-password': 'Неверный пароль',
+                    'auth/email-already-in-use': 'Email уже используется',
+                    'auth/invalid-email': 'Неверный формат email',
+                    'auth/weak-password': 'Пароль должен быть не менее 6 символов',
+                    'auth/too-many-requests': 'Слишком много попыток. Попробуйте позже',
+                    'auth/network-request-failed': 'Ошибка сети. Проверьте подключение',
+                    'auth/user-disabled': 'Учетная запись отключена',
+                    'auth/operation-not-allowed': 'Операция не разрешена. Проверьте настройки Firebase',
+                    'auth/requires-recent-login': 'Требуется повторный вход. Выйдите и войдите снова'
+                };
+                return errorMessages[error.code] || error.message || 'Неизвестная ошибка';
+            },
+
             escapeHtml(text) {
+                if (!text) return '';
                 const div = document.createElement('div');
                 div.textContent = text;
                 return div.innerHTML;
