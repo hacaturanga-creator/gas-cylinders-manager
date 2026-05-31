@@ -84,7 +84,7 @@
         .workspace-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .workspace-header h2 { color: #2c3e50; }
         
-        .storage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; align-items: start; position: relative; transition: all 0.3s; }
+        .storage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; align-items: start; position: relative; transition: all 0.3s; }
         .storage-item { background: white; border: 2px solid #3498db; border-radius: 8px; padding: 12px; min-height: auto; height: auto; display: flex; flex-direction: column; transition: all 0.3s; }
         .storage-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #eee; flex-shrink: 0; }
         .storage-header h4 { color: #2c3e50; }
@@ -163,9 +163,11 @@
         
         .drag-over { background: #d5f4e6 !important; border-color: #27ae60 !important; }
         
-        #emptyDatabase { text-align: center; padding: 50px; background: white; border-radius: 12px; }
-        #emptyDatabase h3 { color: #2c3e50; margin-bottom: 10px; }
-        #emptyDatabase p { color: #666; margin-bottom: 20px; }
+        .empty-state { text-align: center; padding: 50px; background: white; border-radius: 12px; margin-bottom: 20px; }
+        .empty-state h3 { color: #2c3e50; margin-bottom: 10px; }
+        .empty-state p { color: #666; margin-bottom: 20px; }
+        
+        .info-message { background: #e3f2fd; border-left: 4px solid #3498db; padding: 12px; margin-bottom: 15px; border-radius: 6px; color: #2c3e50; font-size: 14px; }
     </style>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 </head>
@@ -188,7 +190,7 @@
             </div>
             <div class="form-group">
                 <label>Email:</label>
-                <input type="email" id="loginEmail" placeholder="user@ammoni.com" autocomplete="email">
+                <input type="email" id="loginEmail" placeholder="user@ammoni.ru" autocomplete="email">
             </div>
             <div class="form-group">
                 <label>Пароль:</label>
@@ -277,6 +279,44 @@
         </div>
     </div>
 
+    <!-- Модальное окно редактирования хранилища -->
+    <div id="editStorageModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="color: #2c3e50;">✏️ Редактировать хранилище</h2>
+            <div class="form-group">
+                <label>Название:</label>
+                <input type="text" id="editStorageName" placeholder="Кабинет №1">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Тип:</label>
+                    <select id="editStorageType">
+                        <option value="Кабинет">Кабинет</option>
+                        <option value="Шкаф">Шкаф</option>
+                        <option value="Склад">Склад</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Вместимость:</label>
+                    <input type="number" id="editStorageCapacity" min="1" max="100" value="10">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Местоположение:</label>
+                <input type="text" id="editStorageLocation" placeholder="Цех №1, 2 этаж">
+            </div>
+            <div class="form-group">
+                <label>Описание:</label>
+                <textarea id="editStorageDescription" placeholder="Дополнительная информация"></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="updateStorageBtn" class="btn btn-primary" style="flex: 1;">💾 Сохранить изменения</button>
+                <button id="cancelEditStorageBtn" class="btn btn-secondary" style="flex: 1;">Отмена</button>
+            </div>
+            <div id="editStorageError" class="error-message hidden"></div>
+        </div>
+    </div>
+
     <div id="usersModal" class="modal hidden">
         <div class="modal-content"><h2 style="color: #2c3e50;">👥 Управление пользователями</h2><div id="usersList"></div><button onclick="App.hideModal('usersModal')" class="btn btn-secondary">Закрыть</button></div>
     </div>
@@ -356,6 +396,8 @@
                 </div>
                 
                 <div id="storageContainer" class="storage-grid"></div>
+                
+                <!-- Свободные баллоны - всегда отображаются -->
                 <div id="freeCylindersContainer" class="free-cylinders hidden">
                     <h3>📦 Свободные баллоны <span class="badge" id="freeCylindersBadge">0</span></h3>
                     <div id="freeCylindersList" class="free-cylinders-grid"></div>
@@ -371,9 +413,10 @@
                     </div>
                 </div>
 
-                <div id="emptyDatabase">
-                    <h3>📭 База данных пуста</h3>
-                    <p>Добавьте хранилище для начала работы</p>
+                <div id="emptyDatabase" class="empty-state hidden">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🏭</div>
+                    <h3>Нет хранилищ</h3>
+                    <p>Добавьте хранилище для размещения баллонов</p>
                     <button id="firstStorageBtn" class="btn btn-primary admin-only">+ Добавить первое хранилище</button>
                 </div>
             </main>
@@ -406,13 +449,12 @@
             storage: [], cylinders: [], archivedCylinders: [],
             draggingCylinder: null, realtimeListeners: [],
             activeUsers: 1, lastUpdateTime: null, realtimeIndicator: null,
-            isArrangeMode: false, authResolved: false,
+            isArrangeMode: false, authResolved: false, storageToEdit: null,
 
             async init() {
                 this.createRealtimeIndicator();
                 await this.checkForFirstAdmin();
                 
-                // Скрываем загрузочный экран после проверки авторизации
                 auth.onAuthStateChanged(async (user) => {
                     this.authResolved = true;
                     
@@ -436,7 +478,6 @@
                         this.stopRealtimeListeners();
                     }
                     
-                    // Скрываем загрузочный экран
                     document.getElementById('loadingScreen').classList.add('hidden');
                 });
                 
@@ -604,6 +645,8 @@
                 document.getElementById('firstStorageBtn').onclick = () => this.showAddStorage();
                 document.getElementById('saveStorageBtn').onclick = () => this.saveStorage();
                 document.getElementById('cancelStorageBtn').onclick = () => this.hideModal('addStorageModal');
+                document.getElementById('updateStorageBtn').onclick = () => this.updateStorage();
+                document.getElementById('cancelEditStorageBtn').onclick = () => this.hideModal('editStorageModal');
                 document.getElementById('showArchiveBtn').onclick = () => this.showArchive();
                 document.getElementById('refreshBtn').onclick = () => this.loadData();
                 document.getElementById('arrangeBtn').onclick = () => this.toggleArrangeMode();
@@ -779,9 +822,12 @@
                 
                 container.innerHTML = '';
                 
+                // Всегда показываем свободные баллоны, если они есть
+                this.renderFreeCylinders();
+                
                 if (this.storage.length === 0) {
                     emptyDb.classList.remove('hidden');
-                    freeContainer.classList.add('hidden');
+                    freeContainer.classList.remove('hidden');
                     if (archiveDiv) archiveDiv.classList.add('hidden');
                     return;
                 }
@@ -791,7 +837,7 @@
                 
                 const sorted = [...this.storage].sort((a,b) => (a.order||0) - (b.order||0));
                 sorted.forEach(s => container.appendChild(this.createStorageElement(s)));
-                this.renderFreeCylinders();
+                
                 if (this.isArrangeMode) this.setupArrangeMode();
             },
 
@@ -809,11 +855,18 @@
                     <div class="storage-header">
                         <h4>${this.escapeHtml(storage.name)} (${storage.type})</h4>
                         <div>
-                            ${this.userRole === 'admin' ? `<button class="btn btn-small" onclick="App.editStorage('${storage.id}')">✏️</button>` : ''}
-                            <button class="btn btn-small btn-danger" onclick="App.deleteStorage('${storage.id}')">🗑️</button>
+                            ${this.userRole === 'admin' ? 
+                                `<button class="btn btn-small" onclick="App.editStorage('${storage.id}')" title="Редактировать">✏️</button>` : ''}
+                            <button class="btn btn-small btn-danger" onclick="App.deleteStorage('${storage.id}')" title="Удалить">🗑️</button>
                         </div>
                     </div>
-                    <div style="color:#666;">Баллонов: ${cylindersHere.length}/${storage.capacity} | Полных: ${full} | Пустых: ${empty} ${expired ? `| ⚠️ ${expired} просроч.` : ''}</div>
+                    <div style="color:#666; font-size:12px; margin-bottom:8px;">
+                        📦 Вместимость: ${storage.capacity} | Занято: ${cylindersHere.length} | Свободно: ${storage.capacity - cylindersHere.length}<br>
+                        ✅ Полных: ${full} | ❌ Пустых: ${empty} ${expired ? `| ⚠️ ${expired} просроч.` : ''}
+                    </div>
+                    <div style="font-size:11px; color:#888; margin-bottom:8px;">
+                        📍 ${storage.location || 'Местоположение не указано'}
+                    </div>
                     <div class="slots-grid" id="slots-${storage.id}"></div>
                 `;
                 const slots = div.querySelector(`#slots-${storage.id}`);
@@ -832,6 +885,73 @@
                     slots.appendChild(slot);
                 }
                 return div;
+            },
+
+            async editStorage(id) {
+                if (this.userRole !== 'admin') {
+                    this.showNotification('Только администраторы могут редактировать хранилища', 'error');
+                    return;
+                }
+                
+                const storage = this.storage.find(s => s.id === id);
+                if (!storage) return;
+                
+                this.storageToEdit = storage;
+                
+                document.getElementById('editStorageName').value = storage.name;
+                document.getElementById('editStorageType').value = storage.type;
+                document.getElementById('editStorageCapacity').value = storage.capacity;
+                document.getElementById('editStorageLocation').value = storage.location || '';
+                document.getElementById('editStorageDescription').value = storage.description || '';
+                
+                this.showModal('editStorageModal');
+            },
+
+            async updateStorage() {
+                if (!this.storageToEdit || this.userRole !== 'admin') return;
+                
+                try {
+                    const name = document.getElementById('editStorageName').value.trim();
+                    const type = document.getElementById('editStorageType').value;
+                    const capacity = parseInt(document.getElementById('editStorageCapacity').value);
+                    const location = document.getElementById('editStorageLocation').value.trim();
+                    const description = document.getElementById('editStorageDescription').value.trim();
+                    
+                    if (!name) {
+                        this.showError('editStorageError', 'Введите название хранилища');
+                        return;
+                    }
+                    
+                    if (isNaN(capacity) || capacity < 1) {
+                        this.showError('editStorageError', 'Введите корректную вместимость (минимум 1)');
+                        return;
+                    }
+                    
+                    const cylindersInStorage = this.cylinders.filter(c => c.storageId === this.storageToEdit.id).length;
+                    if (capacity < cylindersInStorage) {
+                        this.showError('editStorageError', 
+                            `❌ Нельзя уменьшить вместимость до ${capacity}, так как в хранилище уже ${cylindersInStorage} баллонов. Сначала освободите место.`);
+                        return;
+                    }
+                    
+                    await db.collection('storage').doc(this.storageToEdit.id).update({
+                        name: name,
+                        type: type,
+                        capacity: capacity,
+                        location: location,
+                        description: description,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: this.currentUser.email
+                    });
+                    
+                    this.hideModal('editStorageModal');
+                    this.showNotification(`✅ Хранилище "${name}" обновлено`);
+                    this.storageToEdit = null;
+                    
+                } catch (error) {
+                    console.error('Ошибка обновления:', error);
+                    this.showError('editStorageError', error.message);
+                }
             },
 
             createCylinderHTML(cyl) {
@@ -863,10 +983,16 @@
                 const container = document.getElementById('freeCylindersContainer');
                 const list = document.getElementById('freeCylindersList');
                 const badge = document.getElementById('freeCylindersBadge');
-                if (free.length === 0) { container.classList.add('hidden'); return; }
+                
+                if (free.length === 0) { 
+                    container.classList.add('hidden'); 
+                    return; 
+                }
+                
                 container.classList.remove('hidden');
                 badge.textContent = free.length;
                 list.innerHTML = '';
+                
                 free.forEach(cyl => {
                     const div = document.createElement('div');
                     div.className = 'free-cylinder';
@@ -877,7 +1003,14 @@
                     else if (cyl.gasType === 'Гелий') color = '#2ecc71';
                     div.style.borderLeftColor = color;
                     div.setAttribute('draggable', 'true');
-                    div.innerHTML = `<strong>${this.escapeHtml(cyl.number)}</strong><br>${cyl.gasType}<br>${cyl.status}`;
+                    div.innerHTML = `
+                        <strong>${this.escapeHtml(cyl.number)}</strong><br>
+                        ${cyl.gasType}<br>
+                        ${cyl.status}
+                        <div style="margin-top: 5px;">
+                            <button class="btn btn-small" onclick="event.stopPropagation(); App.archiveCylinder('${cyl.id}')">📦</button>
+                        </div>
+                    `;
                     this.setupCylinderDrag(div, cyl.id);
                     list.appendChild(div);
                 });
@@ -948,6 +1081,7 @@
                     archivedBy: this.currentUser.email, storageId: null, position: null
                 });
                 this.showNotification(`Баллон ${cyl.number} в архиве`);
+                this.renderFreeCylinders();
             },
 
             async deleteStorage(id) {
@@ -959,14 +1093,7 @@
                 for (const cyl of cylindersHere) await db.collection('cylinders').doc(cyl.id).update({ storageId: null, position: null });
                 await db.collection('storage').doc(id).delete();
                 this.showNotification(`Хранилище "${storage.name}" удалено`);
-            },
-
-            async editStorage(id) {
-                if (this.userRole !== 'admin') return this.showNotification('Только администраторы', 'error');
-                const storage = this.storage.find(s => s.id === id);
-                if (!storage) return;
-                const newName = prompt('Новое название:', storage.name);
-                if (newName) await db.collection('storage').doc(id).update({ name: newName });
+                this.renderFreeCylinders();
             },
 
             async showAddCylinder() {
@@ -1000,6 +1127,7 @@
                 await db.collection('cylinders').add(data);
                 this.hideModal('addCylinderModal');
                 this.showNotification(`Баллон ${number} добавлен`);
+                this.renderFreeCylinders();
             },
 
             async showAddStorage() {
@@ -1033,7 +1161,7 @@
             async viewCylinder(id) {
                 const cyl = this.cylinders.find(c => c.id === id) || this.archivedCylinders.find(c => c.id === id);
                 if (!cyl) return;
-                alert(`Баллон ${cyl.number}\nТип: ${cyl.gasType}\nСтатус: ${cyl.status}\nВместимость: ${cyl.capacity}л\nПоставщик: ${cyl.supplier || 'не указан'}`);
+                alert(`📦 Баллон ${cyl.number}\n🔹 Тип: ${cyl.gasType}\n🔹 Статус: ${cyl.status}\n🔹 Вместимость: ${cyl.capacity}л\n🔹 Поставщик: ${cyl.supplier || 'не указан'}\n🔹 Дата изготовления: ${cyl.manufactureDate || 'не указана'}\n🔹 Следующее освидетельствование: ${cyl.nextInspectionDate || 'не указано'}`);
             },
 
             showArchive() {
@@ -1072,6 +1200,7 @@
                 if (!confirm('Восстановить баллон?')) return;
                 await db.collection('cylinders').doc(id).update({ archived: false, archiveReason: null, archivedAt: null });
                 this.showNotification('Баллон восстановлен');
+                this.renderFreeCylinders();
             },
 
             updateStats() {
