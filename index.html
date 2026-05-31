@@ -174,6 +174,17 @@
         .empty-state { text-align: center; padding: 50px; background: white; border-radius: 12px; margin-bottom: 20px; }
         .empty-state h3 { color: #2c3e50; margin-bottom: 10px; }
         .empty-state p { color: #666; margin-bottom: 20px; }
+        
+        /* Стили для инструкции */
+        .instruction-section { margin-bottom: 20px; }
+        .instruction-title { font-weight: bold; color: #2c3e50; margin-bottom: 10px; font-size: 16px; }
+        .instruction-list { padding-left: 20px; margin-bottom: 15px; }
+        .instruction-list li { margin-bottom: 8px; line-height: 1.4; }
+        .instruction-note { background: #e8f4fd; padding: 12px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #3498db; }
+        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin: 0 2px; }
+        .status-full { background: #d5f4e6; color: #27ae60; }
+        .status-empty { background: #fadbd8; color: #e74c3c; }
+        .status-installed { background: #c8e6f9; color: #1565c0; }
     </style>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 </head>
@@ -341,21 +352,106 @@
         <div class="modal-content"><h2 style="color: #2c3e50;">👥 Управление пользователями</h2><div id="usersList"></div><button onclick="App.hideModal('usersModal')" class="btn btn-secondary">Закрыть</button></div>
     </div>
 
+    <!-- Модальное окно инструкции -->
+    <div id="instructionModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 700px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #2c3e50; margin: 0;">📖 Руководство пользователя</h2>
+                <button onclick="App.hideModal('instructionModal')" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div class="instruction-section">
+                <div class="instruction-title">🎯 О системе</div>
+                <p>Система предназначена для учета и управления баллонами с техническими газами. Позволяет отслеживать местоположение, статус и техническое состояние баллонов.</p>
+            </div>
+
+            <div class="instruction-section">
+                <div class="instruction-title">👥 Роли пользователей</div>
+                <ul class="instruction-list">
+                    <li><strong>👑 Администратор</strong> - полный доступ: создание/редактирование хранилищ, подтверждение регистрации, управление пользователями, удаление из архива</li>
+                    <li><strong>👤 Пользователь</strong> - работа с баллонами: добавление, перемещение, изменение статуса, архивация</li>
+                </ul>
+            </div>
+
+            <div class="instruction-section">
+                <div class="instruction-title">🏢 Хранилища</div>
+                <ul class="instruction-list">
+                    <li><strong>➕ Добавить хранилище</strong> - только для администраторов</li>
+                    <li><strong>✏️ Редактировать</strong> - изменить название, тип, вместимость (только админ)</li>
+                    <li><strong>🗑️ Удалить</strong> - баллоны освобождаются автоматически (только админ)</li>
+                    <li><strong>📐 Расположить</strong> - изменить порядок отображения (drag & drop)</li>
+                </ul>
+            </div>
+
+            <div class="instruction-section">
+                <div class="instruction-title">🎈 Статусы баллонов</div>
+                <ul class="instruction-list">
+                    <li><span class="status-badge status-full">✅ Полный</span> - баллон заполнен газом</li>
+                    <li><span class="status-badge status-empty">❌ Пустой</span> - баллон пуст</li>
+                    <li><span class="status-badge status-installed">🔧 Установлен</span> - баллон в использовании, доступен ввод давления по манометру</li>
+                </ul>
+                <p><strong>🔄 Смена статуса</strong> - нажмите кнопку "Статус" для циклического переключения</p>
+            </div>
+
+            <div class="instruction-section">
+                <div class="instruction-title">📊 Управление баллонами</div>
+                <ul class="instruction-list">
+                    <li><strong>➕ Добавить</strong> - заполните форму с параметрами баллона</li>
+                    <li><strong>✏️ Редактировать</strong> - нажмите на баллон или кнопку ✏️</li>
+                    <li><strong>🔄 Перемещение</strong> - перетащите баллон в нужное хранилище</li>
+                    <li><strong>📦 В архив</strong> - выберите причину списания и комментарий</li>
+                    <li><strong>📊 Давление</strong> - для статуса "Установлен" введите показания манометра</li>
+                </ul>
+            </div>
+
+            <div class="instruction-section">
+                <div class="instruction-title">📁 Архив</div>
+                <ul class="instruction-list">
+                    <li>Хранит историю списанных/утилизированных баллонов</li>
+                    <li>Содержит причину удаления, дату и имя удалившего</li>
+                    <li><strong>🔄 Восстановить</strong> - вернуть баллон в активные</li>
+                    <li><strong>🗑️ Удалить навсегда</strong> - только для администраторов</li>
+                </ul>
+            </div>
+
+            <div class="instruction-section">
+                <div class="instruction-title">📈 Экспорт и бэкап</div>
+                <ul class="instruction-list">
+                    <li><strong>📊 Экспорт данных</strong> - выгрузка в Excel</li>
+                    <li><strong>💾 Создать бэкап</strong> - сохранение JSON-копии всех данных</li>
+                    <li><strong>📂 Восстановить</strong> - загрузка данных из бэкапа (только для админов)</li>
+                </ul>
+            </div>
+
+            <div class="instruction-note">
+                <strong>💡 Подсказка:</strong> Все изменения синхронизируются в реальном времени между всеми пользователями. Индикатор в правом нижнем углу показывает статус подключения.
+            </div>
+
+            <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; color: #666; font-size: 12px;">
+                📅 Версия 2.0 | Поддержка: admin@system.com
+            </div>
+        </div>
+    </div>
+
     <!-- Основное приложение -->
     <div id="app" class="hidden">
         <header class="header">
             <h1>🗲 Управление баллонами газов</h1>
-            <div class="user-menu">
-                <div class="user-menu-btn" id="userMenuBtn">
-                    <span id="currentUserInitials">U</span>
-                    <span id="currentUserName"></span>
-                    <span>▼</span>
-                </div>
-                <div class="user-menu-dropdown" id="userMenuDropdown">
-                    <div class="user-menu-item" onclick="App.showProfile()"><span class="user-menu-icon">👤</span><span>Мой профиль</span></div>
-                    <div class="user-menu-item" onclick="App.showChangePassword()"><span class="user-menu-icon">🔒</span><span>Сменить пароль</span></div>
-                    <div class="user-menu-item admin-only" onclick="App.showUsersModal()"><span class="user-menu-icon">👥</span><span>Управление пользователями</span></div>
-                    <div class="user-menu-item" onclick="App.logout()"><span class="user-menu-icon">🚪</span><span>Выйти</span></div>
+            <div class="user-info">
+                <button id="showInstructionBtn" class="btn btn-info btn-small" style="margin-right: 10px;">📖 Помощь</button>
+                <div class="user-menu">
+                    <div class="user-menu-btn" id="userMenuBtn">
+                        <span id="currentUserInitials">U</span>
+                        <span id="currentUserName"></span>
+                        <span>▼</span>
+                    </div>
+                    <div class="user-menu-dropdown" id="userMenuDropdown">
+                        <div class="user-menu-item" onclick="App.showProfile()"><span class="user-menu-icon">👤</span><span>Мой профиль</span></div>
+                        <div class="user-menu-item" onclick="App.showChangePassword()"><span class="user-menu-icon">🔒</span><span>Сменить пароль</span></div>
+                        <div class="user-menu-item admin-only" onclick="App.showUsersModal()"><span class="user-menu-icon">👥</span><span>Управление пользователями</span></div>
+                        <div class="user-menu-item" onclick="App.showInstruction()"><span class="user-menu-icon">📖</span><span>Помощь</span></div>
+                        <div class="user-menu-item" onclick="App.logout()"><span class="user-menu-icon">🚪</span><span>Выйти</span></div>
+                    </div>
                 </div>
             </div>
         </header>
@@ -592,6 +688,10 @@
                 document.getElementById('currentUserInitials').textContent = name.charAt(0).toUpperCase();
             },
 
+            showInstruction() {
+                this.showModal('instructionModal');
+            },
+
             createRealtimeIndicator() {
                 this.realtimeIndicator = document.createElement('div');
                 this.realtimeIndicator.className = 'realtime-indicator';
@@ -676,6 +776,7 @@
                 document.getElementById('showUsersBtn').onclick = () => this.showUsersModal();
                 document.getElementById('backupBtn').onclick = () => this.createBackup();
                 document.getElementById('restoreBtn').onclick = () => this.restoreBackup();
+                document.getElementById('showInstructionBtn').onclick = () => this.showInstruction();
                 
                 const menuBtn = document.getElementById('userMenuBtn');
                 const dropdown = document.getElementById('userMenuDropdown');
@@ -1313,7 +1414,7 @@
                 if (archivedSpan) archivedSpan.textContent = this.archivedCylinders.length;
                 if (!tbody) return;
                 if (this.archivedCylinders.length === 0) {
-                    tbody.innerHTML = '</tr><td colspan="7" style="text-align:center; padding:20px;">📭 Архив пуст</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">📭 Архив пуст</td></tr>';
                     return;
                 }
                 tbody.innerHTML = this.archivedCylinders.map(c => `
