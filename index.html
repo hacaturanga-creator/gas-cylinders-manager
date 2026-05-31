@@ -9,6 +9,37 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); color: #333; min-height: 100vh; }
         .hidden { display: none !important; }
         
+        /* Загрузочный экран */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal h2 { margin-bottom: 20px; color: #2c3e50; }
@@ -123,12 +154,6 @@
         .user-menu-icon { width: 20px; text-align: center; color: #333; }
         
         .drop-zone { border: 2px dashed #3498db; border-radius: 8px; padding: 20px; text-align: center; background: #f8f9fa; margin-bottom: 20px; color: #666; }
-        .export-options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
-        .export-option { padding: 15px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; text-align: center; transition: all 0.3s; background: white; }
-        .export-option:hover { border-color: #3498db; background: #f8f9fa; }
-        .export-option.selected { border-color: #3498db; background: #e3f2fd; }
-        .export-option h4 { color: #333; margin-bottom: 5px; }
-        .export-option p { color: #666; font-size: 12px; }
         
         .password-strength { height: 4px; background: #eee; border-radius: 2px; margin-top: 5px; overflow: hidden; }
         .password-strength-bar { height: 100%; width: 0%; transition: width 0.3s; }
@@ -145,8 +170,17 @@
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body>
+    <!-- Загрузочный экран -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h2>Загрузка системы...</h2>
+            <p>Пожалуйста, подождите</p>
+        </div>
+    </div>
+
     <!-- Модальное окно входа -->
-    <div id="loginModal" class="modal">
+    <div id="loginModal" class="modal hidden">
         <div class="modal-content" style="max-width: 450px;">
             <div style="text-align: center; margin-bottom: 25px;">
                 <h2 style="margin-bottom: 10px; color: #2c3e50;">🔐 Система управления баллонами</h2>
@@ -372,18 +406,22 @@
             storage: [], cylinders: [], archivedCylinders: [],
             draggingCylinder: null, realtimeListeners: [],
             activeUsers: 1, lastUpdateTime: null, realtimeIndicator: null,
-            isArrangeMode: false,
+            isArrangeMode: false, authResolved: false,
 
             async init() {
                 this.createRealtimeIndicator();
                 await this.checkForFirstAdmin();
                 
+                // Скрываем загрузочный экран после проверки авторизации
                 auth.onAuthStateChanged(async (user) => {
+                    this.authResolved = true;
+                    
                     if (user) {
                         this.currentUser = user;
                         await this.loadUserData();
-                        if (this.userData?.status === 'pending') this.showPendingApproval();
-                        else if (this.userData?.status === 'approved' || this.userData?.status === 'active') {
+                        if (this.userData?.status === 'pending') {
+                            this.showPendingApproval();
+                        } else if (this.userData?.status === 'approved' || this.userData?.status === 'active') {
                             await this.loadUserRole();
                             this.showApp();
                             await this.setUserActive(true);
@@ -397,7 +435,11 @@
                         this.showLogin();
                         this.stopRealtimeListeners();
                     }
+                    
+                    // Скрываем загрузочный экран
+                    document.getElementById('loadingScreen').classList.add('hidden');
                 });
+                
                 this.setupEventListeners();
             },
 
@@ -1044,23 +1086,109 @@
 
             async showUsersModal() {
                 if (this.userRole !== 'admin') return;
+                
                 const users = (await db.collection('users').get()).docs.map(d => ({ id: d.id, ...d.data() }));
+                const admins = users.filter(u => u.role === 'admin');
+                const regularUsers = users.filter(u => u.role !== 'admin');
+                
                 const list = document.getElementById('usersList');
-                list.innerHTML = users.map(u => `
-                    <div style="padding:10px; border-bottom:1px solid #ddd;">
-                        <strong>${u.email}</strong><br>
-                        Роль: ${u.role || 'user'} | Статус: ${u.status || 'pending'}<br>
-                        <button class="btn btn-small btn-success" onclick="App.approveUser('${u.id}')">✅ Подтвердить</button>
-                        <button class="btn btn-small btn-danger" onclick="App.rejectUser('${u.id}')">❌ Отклонить</button>
-                        <button class="btn btn-small btn-info" onclick="App.makeAdmin('${u.id}')">👑 Сделать админом</button>
+                list.innerHTML = `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 5px;">
+                            👑 Администраторы (${admins.length})
+                        </h3>
+                        ${admins.map(u => `
+                            <div style="padding:10px; border-left: 4px solid #e74c3c; margin-bottom: 10px; background: #fff5f5; border-radius: 6px;">
+                                <strong>${this.escapeHtml(u.email)}</strong><br>
+                                Имя: ${this.escapeHtml(u.name) || 'не указано'}<br>
+                                Статус: ${this.getStatusText(u.status)}<br>
+                                ${u.id !== this.currentUser.uid ? 
+                                    `<button class="btn btn-small btn-warning" onclick="App.removeAdmin('${u.id}')">👑 Снять админа</button>` : 
+                                    `<span style="color: #27ae60;">✅ Это вы (текущий администратор)</span>`}
+                            </div>
+                        `).join('')}
                     </div>
-                `).join('');
+                    
+                    <div>
+                        <h3 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+                            👥 Пользователи (${regularUsers.length})
+                        </h3>
+                        ${regularUsers.map(u => `
+                            <div style="padding:10px; border-left: 4px solid ${this.getStatusColor(u.status)}; margin-bottom: 10px; border-radius: 6px;">
+                                <strong>${this.escapeHtml(u.email)}</strong><br>
+                                Имя: ${this.escapeHtml(u.name) || 'не указано'}<br>
+                                Статус: ${this.getStatusText(u.status)}<br>
+                                <div style="display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap;">
+                                    ${u.status === 'pending' ? 
+                                        `<button class="btn btn-small btn-success" onclick="App.approveUser('${u.id}')">✅ Подтвердить</button>
+                                         <button class="btn btn-small btn-danger" onclick="App.rejectUser('${u.id}')">❌ Отклонить</button>` : ''}
+                                    ${u.status === 'active' ? 
+                                        `<button class="btn btn-small btn-danger" onclick="App.banUser('${u.id}')">⛔ Заблокировать</button>` : ''}
+                                    ${u.status === 'banned' ? 
+                                        `<button class="btn btn-small btn-success" onclick="App.approveUser('${u.id}')">✅ Разблокировать</button>` : ''}
+                                    ${u.role !== 'admin' ? 
+                                        `<button class="btn btn-small btn-info" onclick="App.makeAdmin('${u.id}')">👑 Сделать админом</button>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
                 this.showModal('usersModal');
+            },
+
+            getStatusText(status) {
+                switch(status) {
+                    case 'pending': return '⏳ Ожидает подтверждения';
+                    case 'active': return '✅ Активен';
+                    case 'rejected': return '❌ Отклонен';
+                    case 'banned': return '⛔ Заблокирован';
+                    default: return '❓ Неизвестно';
+                }
+            },
+
+            getStatusColor(status) {
+                switch(status) {
+                    case 'pending': return '#f39c12';
+                    case 'active': return '#27ae60';
+                    case 'rejected': return '#e74c3c';
+                    case 'banned': return '#7f8c8d';
+                    default: return '#3498db';
+                }
+            },
+
+            async removeAdmin(uid) {
+                const admins = (await db.collection('users').where('role', '==', 'admin').get()).size;
+                if (admins <= 1) {
+                    this.showNotification('❌ Нельзя снять права с последнего администратора!', 'error');
+                    return;
+                }
+                if (!confirm('Снять права администратора с этого пользователя?')) return;
+                await db.collection('users').doc(uid).update({ role: 'user' });
+                this.showNotification('👑 Права администратора сняты');
+                this.showUsersModal();
+            },
+
+            async makeAdmin(uid) {
+                const user = await db.collection('users').doc(uid).get();
+                if (user.data()?.role === 'admin') {
+                    this.showNotification('❌ Этот пользователь уже администратор!', 'error');
+                    return;
+                }
+                if (!confirm('Назначить этого пользователя администратором?')) return;
+                await db.collection('users').doc(uid).update({ role: 'admin' });
+                this.showNotification('👑 Пользователь назначен администратором');
+                this.showUsersModal();
             },
 
             async approveUser(uid) { await db.collection('users').doc(uid).update({ status: 'active' }); this.showUsersModal(); this.showNotification('Пользователь активирован'); },
             async rejectUser(uid) { await db.collection('users').doc(uid).update({ status: 'rejected' }); this.showUsersModal(); this.showNotification('Пользователь отклонен'); },
-            async makeAdmin(uid) { await db.collection('users').doc(uid).update({ role: 'admin' }); this.showUsersModal(); this.showNotification('Роль изменена'); },
+            async banUser(uid) {
+                const reason = prompt('Причина блокировки:');
+                if (!reason) return;
+                await db.collection('users').doc(uid).update({ status: 'banned', banReason: reason });
+                this.showUsersModal();
+                this.showNotification('Пользователь заблокирован');
+            },
 
             async createBackup() {
                 const backup = {
@@ -1069,7 +1197,6 @@
                     cylinders: this.cylinders,
                     archived: this.archivedCylinders
                 };
-                localStorage.setItem('gas_backup', JSON.stringify(backup));
                 const dataStr = JSON.stringify(backup, null, 2);
                 const blob = new Blob([dataStr], {type: 'application/json'});
                 const url = URL.createObjectURL(blob);
