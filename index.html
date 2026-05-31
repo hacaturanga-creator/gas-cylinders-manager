@@ -1384,16 +1384,28 @@
                 if (!isNaN(idx) && free[idx]) this.moveCylinderToSlot(free[idx].id, storageId, pos);
             },
 
-            async toggleCylinderStatus(id) {
-                const cyl = this.cylinders.find(c => c.id === id);
-                if (!cyl) return;
-                const statuses = ['Полный', 'Пустой', 'Установлен'];
-                const currentIndex = statuses.indexOf(cyl.status);
-                const newStatus = statuses[(currentIndex + 1) % statuses.length];
-                await db.collection('cylinders').doc(id).update({ status: newStatus });
-                this.showNotification(`Статус изменен на ${newStatus === 'Установлен' ? '🔧 Установлен' : (newStatus === 'Полный' ? '✅ Полный' : '❌ Пустой')}`);
-            },
-
+async toggleCylinderStatus(id) {
+    const cyl = this.cylinders.find(c => c.id === id);
+    if (!cyl) return;  
+    // Карусель статусов: Полный → Установлен → Пустой → Полный
+    const statuses = ['Полный', 'Установлен', 'Пустой'];
+    const currentIndex = statuses.indexOf(cyl.status);
+    const newStatus = statuses[(currentIndex + 1) % statuses.length];
+    
+    try {
+        await db.collection('cylinders').doc(id).update({ status: newStatus });
+        
+        let statusText = '';
+        if (newStatus === 'Установлен') statusText = '🔧 Установлен';
+        else if (newStatus === 'Полный') statusText = '✅ Полный';
+        else statusText = '❌ Пустой';
+        
+        this.showNotification(`Статус баллона ${cyl.number} изменен на ${statusText}`);
+    } catch (error) {
+        console.error('Ошибка изменения статуса:', error);
+        this.showNotification('Ошибка изменения статуса', 'error');
+    }
+}
             async archiveCylinder(cylinderId) {
                 const cylinder = this.cylinders.find(c => c.id === cylinderId);
                 if (!cylinder) return;
