@@ -9,7 +9,6 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); color: #333; min-height: 100vh; }
         .hidden { display: none !important; }
         
-        /* Загрузочный экран */
         .loading-screen {
             position: fixed;
             top: 0;
@@ -169,8 +168,6 @@
         .empty-state { text-align: center; padding: 50px; background: white; border-radius: 12px; margin-bottom: 20px; }
         .empty-state h3 { color: #2c3e50; margin-bottom: 10px; }
         .empty-state p { color: #666; margin-bottom: 20px; }
-        
-        .info-message { background: #e3f2fd; border-left: 4px solid #3498db; padding: 12px; margin-bottom: 15px; border-radius: 6px; color: #2c3e50; font-size: 14px; }
     </style>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
 </head>
@@ -253,71 +250,18 @@
         <div class="modal-content">
             <h2 id="cylinderModalTitle" style="color: #2c3e50;">➕ Добавить баллон</h2>
             <div class="form-row">
-                <div class="form-group">
-                    <label>Номер баллона: *</label>
-                    <input type="text" id="cylinderNumber" placeholder="Б-1234">
-                </div>
-                <div class="form-group">
-                    <label>Тип газа: *</label>
-                    <select id="cylinderGasType">
-                        <option value="Кислород">Кислород</option>
-                        <option value="Азот">Азот</option>
-                        <option value="Аргон">Аргон</option>
-                        <option value="Гелий">Гелий</option>
-                        <option value="Ацетилен">Ацетилен</option>
-                        <option value="Водород">Водород</option>
-                        <option value="Метан">Метан</option>
-                        <option value="Углекислый газ">Углекислый газ</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>Номер баллона: *</label><input type="text" id="cylinderNumber" placeholder="Б-1234"></div>
+                <div class="form-group"><label>Тип газа: *</label><select id="cylinderGasType"><option>Кислород</option><option>Азот</option><option>Аргон</option><option>Гелий</option><option>Ацетилен</option><option>Водород</option><option>Метан</option><option>Углекислый газ</option></select></div>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Дата поставки:</label>
-                    <input type="date" id="deliveryDate">
-                </div>
-                <div class="form-group">
-                    <label>Дата изготовления:</label>
-                    <input type="date" id="manufactureDate">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Следующее освидетельствование:</label>
-                    <input type="date" id="nextInspectionDate">
-                </div>
-                <div class="form-group">
-                    <label>Статус:</label>
-                    <select id="cylinderStatus">
-                        <option value="Полный">Полный</option>
-                        <option value="Пустой">Пустой</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Рабочее давление (атм):</label>
-                    <input type="number" id="workingPressure" value="150" step="0.1">
-                </div>
-                <div class="form-group">
-                    <label>Давление испытаний (атм):</label>
-                    <input type="number" id="testPressure" value="225" step="0.1">
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Вместимость (л):</label>
-                    <input type="number" id="capacity" value="40" step="0.1">
-                </div>
-                <div class="form-group">
-                    <label>Поставщик:</label>
-                    <input type="text" id="supplier" placeholder="ООО ГазСнаб">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Примечание:</label>
-                <textarea id="notes" placeholder="Дополнительная информация"></textarea>
-            </div>
+            <div class="form-row"><div class="form-group"><label>Дата поставки:</label><input type="date" id="deliveryDate"></div>
+            <div class="form-group"><label>Дата изготовления:</label><input type="date" id="manufactureDate"></div></div>
+            <div class="form-row"><div class="form-group"><label>Освидетельствование:</label><input type="date" id="nextInspectionDate"></div>
+            <div class="form-group"><label>Статус:</label><select id="cylinderStatus"><option>Полный</option><option>Пустой</option></select></div></div>
+            <div class="form-row"><div class="form-group"><label>Раб. давление (атм):</label><input type="number" id="workingPressure" value="150"></div>
+            <div class="form-group"><label>Давление испытаний:</label><input type="number" id="testPressure" value="225"></div></div>
+            <div class="form-row"><div class="form-group"><label>Вместимость (л):</label><input type="number" id="capacity" value="40"></div>
+            <div class="form-group"><label>Поставщик:</label><input type="text" id="supplier" value="ООО ГазСнаб"></div></div>
+            <div class="form-group"><label>Примечание:</label><textarea id="notes"></textarea></div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button id="saveCylinderBtn" class="btn btn-primary" style="flex: 1;">Сохранить</button>
                 <button id="cancelCylinderBtn" class="btn btn-secondary" style="flex: 1;">Отмена</button>
@@ -365,7 +309,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно редактирования хранилища -->
     <div id="editStorageModal" class="modal hidden">
         <div class="modal-content">
             <h2 style="color: #2c3e50;">✏️ Редактировать хранилище</h2>
@@ -478,17 +421,7 @@
                     </div>
                     <div class="archive-content" id="archiveContent">
                         <table class="archive-table">
-                            <thead>
-                                <tr>
-                                    <th>Номер</th>
-                                    <th>Газ</th>
-                                    <th>Дата удаления</th>
-                                    <th>Причина</th>
-                                    <th>Удалил</th>
-                                    <th>Комментарий</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th>Номер</th><th>Газ</th><th>Дата удаления</th><th>Причина</th><th>Удалил</th><th>Комментарий</th><th>Действия</th></tr></thead>
                             <tbody id="archiveTableBody"></tbody>
                         </table>
                     </div>
@@ -511,7 +444,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
     <script>
-        // Firebase конфигурация
         const firebaseConfig = {
             apiKey: "AIzaSyA0Guq1AuGZ1HnlQUeoEgrdC8peHc1Qkms",
             authDomain: "gas-cylinders-manager.firebaseapp.com",
@@ -530,16 +462,13 @@
             storage: [], cylinders: [], archivedCylinders: [],
             draggingCylinder: null, realtimeListeners: [],
             activeUsers: 1, lastUpdateTime: null, realtimeIndicator: null,
-            isArrangeMode: false, authResolved: false, storageToEdit: null,
-            editingCylinderId: null,
+            isArrangeMode: false, storageToEdit: null, editingCylinderId: null,
 
             async init() {
                 this.createRealtimeIndicator();
                 await this.checkForFirstAdmin();
                 
                 auth.onAuthStateChanged(async (user) => {
-                    this.authResolved = true;
-                    
                     if (user) {
                         this.currentUser = user;
                         await this.loadUserData();
@@ -559,10 +488,8 @@
                         this.showLogin();
                         this.stopRealtimeListeners();
                     }
-                    
                     document.getElementById('loadingScreen').classList.add('hidden');
                 });
-                
                 this.setupEventListeners();
             },
 
@@ -638,7 +565,6 @@
                     if (this.userRole === 'admin') firstStorageBtn.classList.add('show');
                     else firstStorageBtn.classList.remove('show');
                 }
-                
                 adminMenuItems.forEach(item => {
                     if (this.userRole === 'admin') item.classList.add('show');
                     else item.classList.remove('show');
@@ -679,27 +605,23 @@
 
             setupRealtimeListeners() {
                 this.stopRealtimeListeners();
-                
                 this.realtimeListeners.push(db.collection('storage').onSnapshot(snap => {
                     this.storage = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     this.renderWorkspace();
                     this.updateStats();
                     this.lastUpdateTime = Date.now();
                 }));
-                
                 this.realtimeListeners.push(db.collection('cylinders').where('archived', '==', false).onSnapshot(snap => {
                     this.cylinders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     this.renderWorkspace();
                     this.updateStats();
                     this.lastUpdateTime = Date.now();
                 }));
-                
                 this.realtimeListeners.push(db.collection('cylinders').where('archived', '==', true).onSnapshot(snap => {
                     this.archivedCylinders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                     this.renderArchive();
                     this.updateStats();
                 }));
-                
                 this.realtimeListeners.push(db.collection('activeUsers').onSnapshot(snap => {
                     this.activeUsers = snap.size;
                     document.getElementById('activeUsers').textContent = this.activeUsers;
@@ -936,8 +858,7 @@
                     <div class="storage-header">
                         <h4>${this.escapeHtml(storage.name)} (${storage.type})</h4>
                         <div>
-                            ${this.userRole === 'admin' ? 
-                                `<button class="btn btn-small" onclick="App.editStorage('${storage.id}')" title="Редактировать">✏️</button>` : ''}
+                            ${this.userRole === 'admin' ? `<button class="btn btn-small" onclick="App.editStorage('${storage.id}')" title="Редактировать">✏️</button>` : ''}
                             <button class="btn btn-small btn-danger" onclick="App.deleteStorage('${storage.id}')" title="Удалить">🗑️</button>
                         </div>
                     </div>
@@ -945,9 +866,7 @@
                         📦 Вместимость: ${storage.capacity} | Занято: ${cylindersHere.length} | Свободно: ${storage.capacity - cylindersHere.length}<br>
                         ✅ Полных: ${full} | ❌ Пустых: ${empty} ${expired ? `| ⚠️ ${expired} просроч.` : ''}
                     </div>
-                    <div style="font-size:11px; color:#888; margin-bottom:8px;">
-                        📍 ${storage.location || 'Местоположение не указано'}
-                    </div>
+                    <div style="font-size:11px; color:#888; margin-bottom:8px;">📍 ${storage.location || 'Местоположение не указано'}</div>
                     <div class="slots-grid" id="slots-${storage.id}"></div>
                 `;
                 const slots = div.querySelector(`#slots-${storage.id}`);
@@ -995,7 +914,6 @@
             async viewCylinder(id) {
                 const cyl = this.cylinders.find(c => c.id === id);
                 if (!cyl) return;
-                
                 document.getElementById('viewCylinderNumber').textContent = cyl.number;
                 document.getElementById('viewNumber').value = cyl.number || '';
                 document.getElementById('viewGasType').value = cyl.gasType || '';
@@ -1008,7 +926,6 @@
                 document.getElementById('viewCapacity').value = cyl.capacity ? cyl.capacity + ' л' : '';
                 document.getElementById('viewSupplier').value = cyl.supplier || '';
                 document.getElementById('viewNotes').value = cyl.notes || '';
-                
                 let storageLocation = 'Свободный баллон';
                 if (cyl.storageId) {
                     const storage = this.storage.find(s => s.id === cyl.storageId);
@@ -1018,10 +935,7 @@
                 document.getElementById('viewCreatedBy').value = cyl.createdBy || '';
                 if (cyl.createdAt && cyl.createdAt.toDate) {
                     document.getElementById('viewCreatedAt').value = cyl.createdAt.toDate().toLocaleString('ru-RU');
-                } else {
-                    document.getElementById('viewCreatedAt').value = '';
                 }
-                
                 this.editingCylinderId = cyl.id;
                 this.showModal('viewCylinderModal');
             },
@@ -1034,7 +948,6 @@
             async showEditCylinder(id) {
                 const cyl = this.cylinders.find(c => c.id === id);
                 if (!cyl) return;
-                
                 document.getElementById('cylinderModalTitle').textContent = '✏️ Редактировать баллон';
                 document.getElementById('cylinderNumber').value = cyl.number || '';
                 document.getElementById('cylinderGasType').value = cyl.gasType || 'Кислород';
@@ -1047,7 +960,6 @@
                 document.getElementById('capacity').value = cyl.capacity || 40;
                 document.getElementById('supplier').value = cyl.supplier || 'ООО ГазСнаб';
                 document.getElementById('notes').value = cyl.notes || '';
-                
                 this.editingCylinderId = cyl.id;
                 this.showModal('addCylinderModal');
             },
@@ -1055,7 +967,6 @@
             async saveCylinder() {
                 const number = document.getElementById('cylinderNumber').value.trim();
                 if (!number) return this.showError('cylinderError', 'Введите номер баллона');
-                
                 const cylinderData = {
                     number: number,
                     gasType: document.getElementById('cylinderGasType').value,
@@ -1071,7 +982,6 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedBy: this.currentUser.email
                 };
-                
                 try {
                     if (this.editingCylinderId) {
                         await db.collection('cylinders').doc(this.editingCylinderId).update(cylinderData);
@@ -1090,13 +1000,10 @@
                         await db.collection('cylinders').add(cylinderData);
                         this.showNotification(`✅ Баллон ${number} добавлен`);
                     }
-                    
                     this.hideModal('addCylinderModal');
                     this.editingCylinderId = null;
                     document.getElementById('cylinderModalTitle').textContent = '➕ Добавить баллон';
-                    
                 } catch (error) {
-                    console.error('Ошибка сохранения баллона:', error);
                     this.showError('cylinderError', error.message);
                 }
             },
@@ -1104,20 +1011,12 @@
             async showAddCylinder() {
                 document.getElementById('cylinderModalTitle').textContent = '➕ Добавить баллон';
                 this.editingCylinderId = null;
-                
                 document.getElementById('cylinderNumber').value = `Б-${Math.floor(Math.random()*9000+1000)}`;
                 const today = new Date().toISOString().split('T')[0];
                 const nextYear = new Date(); nextYear.setFullYear(nextYear.getFullYear()+1);
                 document.getElementById('deliveryDate').value = today;
                 document.getElementById('manufactureDate').value = today;
                 document.getElementById('nextInspectionDate').value = nextYear.toISOString().split('T')[0];
-                document.getElementById('cylinderStatus').value = 'Полный';
-                document.getElementById('workingPressure').value = '150';
-                document.getElementById('testPressure').value = '225';
-                document.getElementById('capacity').value = '40';
-                document.getElementById('supplier').value = 'ООО ГазСнаб';
-                document.getElementById('notes').value = '';
-                
                 this.showModal('addCylinderModal');
             },
 
@@ -1126,16 +1025,10 @@
                 const container = document.getElementById('freeCylindersContainer');
                 const list = document.getElementById('freeCylindersList');
                 const badge = document.getElementById('freeCylindersBadge');
-                
-                if (free.length === 0) { 
-                    container.classList.add('hidden'); 
-                    return; 
-                }
-                
+                if (free.length === 0) { container.classList.add('hidden'); return; }
                 container.classList.remove('hidden');
                 badge.textContent = free.length;
                 list.innerHTML = '';
-                
                 free.forEach(cyl => {
                     const div = document.createElement('div');
                     div.className = 'free-cylinder';
@@ -1146,16 +1039,12 @@
                     else if (cyl.gasType === 'Гелий') color = '#2ecc71';
                     div.style.borderLeftColor = color;
                     div.setAttribute('draggable', 'true');
-                    div.innerHTML = `
-                        <strong>${this.escapeHtml(cyl.number)}</strong><br>
-                        ${cyl.gasType}<br>
-                        ${cyl.status}
-                        <div style="margin-top: 5px; display: flex; gap: 3px;">
+                    div.innerHTML = `<strong>${this.escapeHtml(cyl.number)}</strong><br>${cyl.gasType}<br>${cyl.status}
+                        <div style="margin-top:5px; display:flex; gap:3px;">
                             <button class="btn btn-small" onclick="event.stopPropagation(); App.viewCylinder('${cyl.id}')">👁️</button>
                             <button class="btn btn-small btn-warning" onclick="event.stopPropagation(); App.showEditCylinder('${cyl.id}')">✏️</button>
                             <button class="btn btn-small btn-danger" onclick="event.stopPropagation(); App.archiveCylinder('${cyl.id}')">📦</button>
-                        </div>
-                    `;
+                        </div>`;
                     this.setupCylinderDrag(div, cyl.id);
                     list.appendChild(div);
                 });
@@ -1219,19 +1108,14 @@
             async archiveCylinder(cylinderId) {
                 const cylinder = this.cylinders.find(c => c.id === cylinderId);
                 if (!cylinder) return;
-                
                 const modal = document.createElement('div');
                 modal.className = 'modal';
                 modal.innerHTML = `
                     <div class="modal-content" style="max-width: 450px;">
                         <h2 style="color: #2c3e50;">📦 Перемещение в архив</h2>
-                        <p style="margin-bottom: 15px; color: #666;">
-                            Баллон: <strong>${this.escapeHtml(cylinder.number)}</strong> (${cylinder.gasType})
-                        </p>
-                        
-                        <div class="form-group">
-                            <label>Причина удаления: *</label>
-                            <select id="archiveReasonSelect" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px;">
+                        <p style="margin-bottom:15px;">Баллон: <strong>${this.escapeHtml(cylinder.number)}</strong> (${cylinder.gasType})</p>
+                        <div class="form-group"><label>Причина удаления: *</label>
+                            <select id="archiveReasonSelect" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
                                 <option value="">Выберите причину</option>
                                 <option value="Списание">📝 Списание</option>
                                 <option value="Брак">🔧 Брак</option>
@@ -1242,126 +1126,68 @@
                                 <option value="Иное">❓ Иное</option>
                             </select>
                         </div>
-                        
-                        <div class="form-group">
-                            <label>Комментарий:</label>
-                            <textarea id="archiveCommentText" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px;" placeholder="Дополнительная информация..."></textarea>
+                        <div class="form-group"><label>Комментарий:</label>
+                            <textarea id="archiveCommentText" rows="3" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></textarea>
                         </div>
-                        
-                        <div style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button id="confirmArchiveBtn" class="btn btn-danger" style="flex: 1;">✅ Переместить в архив</button>
-                            <button id="cancelArchiveBtn" class="btn btn-secondary" style="flex: 1;">❌ Отмена</button>
+                        <div style="display:flex; gap:10px; margin-top:20px;">
+                            <button id="confirmArchiveBtn" class="btn btn-danger" style="flex:1;">✅ Переместить в архив</button>
+                            <button id="cancelArchiveBtn" class="btn btn-secondary" style="flex:1;">❌ Отмена</button>
                         </div>
-                    </div>
-                `;
-                
+                    </div>`;
                 document.body.appendChild(modal);
-                
                 document.getElementById('confirmArchiveBtn').onclick = async () => {
                     const reason = document.getElementById('archiveReasonSelect').value;
                     const comment = document.getElementById('archiveCommentText').value.trim();
-                    
-                    if (!reason) {
-                        this.showNotification('Пожалуйста, выберите причину удаления', 'error');
-                        return;
-                    }
-                    
-                    try {
-                        await db.collection('cylinders').doc(cylinder.id).update({
-                            archived: true,
-                            archiveReason: reason,
-                            archiveComment: comment,
-                            archivedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            archivedBy: this.currentUser.email,
-                            storageId: null,
-                            position: null,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                            updatedBy: this.currentUser.email
-                        });
-                        
-                        this.showNotification(`📦 Баллон ${cylinder.number} перемещен в архив (${reason})`);
-                        modal.remove();
-                        
-                    } catch (error) {
-                        console.error('Ошибка архивирования:', error);
-                        this.showNotification('Ошибка при архивации', 'error');
-                    }
-                };
-                
-                document.getElementById('cancelArchiveBtn').onclick = () => {
+                    if (!reason) { this.showNotification('Выберите причину удаления', 'error'); return; }
+                    await db.collection('cylinders').doc(cylinder.id).update({
+                        archived: true, archiveReason: reason, archiveComment: comment,
+                        archivedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        archivedBy: this.currentUser.email, storageId: null, position: null
+                    });
+                    this.showNotification(`📦 Баллон ${cylinder.number} перемещен в архив (${reason})`);
                     modal.remove();
                 };
-                
-                modal.onclick = (e) => {
-                    if (e.target === modal) modal.remove();
-                };
+                document.getElementById('cancelArchiveBtn').onclick = () => modal.remove();
+                modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
             },
 
             async editStorage(id) {
-                if (this.userRole !== 'admin') {
-                    this.showNotification('Только администраторы могут редактировать хранилища', 'error');
-                    return;
-                }
-                
+                if (this.userRole !== 'admin') return this.showNotification('Только администраторы', 'error');
                 const storage = this.storage.find(s => s.id === id);
                 if (!storage) return;
-                
                 this.storageToEdit = storage;
-                
                 document.getElementById('editStorageName').value = storage.name;
                 document.getElementById('editStorageType').value = storage.type;
                 document.getElementById('editStorageCapacity').value = storage.capacity;
                 document.getElementById('editStorageLocation').value = storage.location || '';
                 document.getElementById('editStorageDescription').value = storage.description || '';
-                
                 this.showModal('editStorageModal');
             },
 
             async updateStorage() {
                 if (!this.storageToEdit || this.userRole !== 'admin') return;
-                
                 try {
                     const name = document.getElementById('editStorageName').value.trim();
                     const type = document.getElementById('editStorageType').value;
                     const capacity = parseInt(document.getElementById('editStorageCapacity').value);
                     const location = document.getElementById('editStorageLocation').value.trim();
                     const description = document.getElementById('editStorageDescription').value.trim();
-                    
-                    if (!name) {
-                        this.showError('editStorageError', 'Введите название хранилища');
-                        return;
-                    }
-                    
-                    if (isNaN(capacity) || capacity < 1) {
-                        this.showError('editStorageError', 'Введите корректную вместимость (минимум 1)');
-                        return;
-                    }
-                    
+                    if (!name) return this.showError('editStorageError', 'Введите название');
+                    if (isNaN(capacity) || capacity < 1) return this.showError('editStorageError', 'Введите корректную вместимость');
                     const cylindersInStorage = this.cylinders.filter(c => c.storageId === this.storageToEdit.id).length;
                     if (capacity < cylindersInStorage) {
-                        this.showError('editStorageError', 
-                            `❌ Нельзя уменьшить вместимость до ${capacity}, так как в хранилище уже ${cylindersInStorage} баллонов. Сначала освободите место.`);
+                        this.showError('editStorageError', `Нельзя уменьшить вместимость до ${capacity}, в хранилище уже ${cylindersInStorage} баллонов.`);
                         return;
                     }
-                    
                     await db.collection('storage').doc(this.storageToEdit.id).update({
-                        name: name,
-                        type: type,
-                        capacity: capacity,
-                        location: location,
-                        description: description,
+                        name, type, capacity, location, description,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         updatedBy: this.currentUser.email
                     });
-                    
                     this.hideModal('editStorageModal');
                     this.showNotification(`✅ Хранилище "${name}" обновлено`);
                     this.storageToEdit = null;
-                    
-                } catch (error) {
-                    console.error('Ошибка обновления:', error);
-                    this.showError('editStorageError', error.message);
-                }
+                } catch(e) { this.showError('editStorageError', e.message); }
             },
 
             async deleteStorage(id) {
@@ -1417,27 +1243,24 @@
                 const tbody = document.getElementById('archiveTableBody');
                 const count = document.getElementById('archiveCount');
                 const archivedSpan = document.getElementById('archivedCount');
-                
                 if (count) count.textContent = this.archivedCylinders.length;
                 if (archivedSpan) archivedSpan.textContent = this.archivedCylinders.length;
                 if (!tbody) return;
-                
                 if (this.archivedCylinders.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">📭 Архив пуст</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">📭 Архив пуст</td></tr></tr>';
                     return;
                 }
-                
                 tbody.innerHTML = this.archivedCylinders.map(c => `
                     <tr>
-                        <td style="padding: 8px;">${this.escapeHtml(c.number)}</td>
-                        <td style="padding: 8px;">${c.gasType}</td>
-                        <td style="padding: 8px;">${c.archivedAt?.toDate?.().toLocaleString() || ''}</td>
-                        <td style="padding: 8px;">${this.getArchiveReasonIcon(c.archiveReason)} ${c.archiveReason || '-'}</td>
-                        <td style="padding: 8px;">${c.archivedBy || '-'}</td>
-                        <td style="padding: 8px;">${c.archiveComment || '-'}</td>
-                        <td style="padding: 8px;">
-                            <button class="btn btn-small btn-success" onclick="App.restoreFromArchive('${c.id}')" style="margin-right: 5px;">🔄 Восстановить</button>
-                            <button class="btn btn-small btn-danger" onclick="App.permanentDelete('${c.id}')">🗑️ Удалить навсегда</button>
+                        <td>${this.escapeHtml(c.number)}</td>
+                        <td>${c.gasType}</td>
+                        <td>${c.archivedAt?.toDate?.().toLocaleString() || ''}</td>
+                        <td>${this.getArchiveReasonIcon(c.archiveReason)} ${c.archiveReason || '-'}</td>
+                        <td>${c.archivedBy || '-'}</td>
+                        <td>${c.archiveComment || '-'}</td>
+                        <td>
+                            <button class="btn btn-small btn-success" onclick="App.restoreFromArchive('${c.id}')" style="margin-right:5px;">🔄 Восстановить</button>
+                            ${this.userRole === 'admin' ? `<button class="btn btn-small btn-danger" onclick="App.permanentDelete('${c.id}')">🗑️ Удалить навсегда</button>` : ''}
                         </td>
                     </tr>
                 `).join('');
@@ -1462,43 +1285,34 @@
             },
 
             async permanentDelete(cylinderId) {
+                if (this.userRole !== 'admin') {
+                    this.showNotification('⛔ Только администраторы могут удалять баллоны из архива!', 'error');
+                    return;
+                }
                 const cylinder = this.archivedCylinders.find(c => c.id === cylinderId);
                 if (!cylinder) return;
-                
-                const confirmDelete = confirm(`⚠️ ВНИМАНИЕ!\n\nВы уверены, что хотите навсегда удалить баллон ${cylinder.number} (${cylinder.gasType})?\n\n📅 Дата удаления: ${cylinder.archivedAt?.toDate?.().toLocaleString() || 'неизвестна'}\n📋 Причина: ${cylinder.archiveReason || 'не указана'}\n\nЭто действие НЕЛЬЗЯ отменить!`);
+                const confirmDelete = confirm(`⚠️ ВНИМАНИЕ!\n\nВы уверены, что хотите навсегда удалить баллон ${cylinder.number} (${cylinder.gasType})?\n\nДата удаления: ${cylinder.archivedAt?.toDate?.().toLocaleString() || 'неизвестна'}\nПричина: ${cylinder.archiveReason || 'не указана'}\n\nЭто действие НЕЛЬЗЯ отменить!`);
                 if (!confirmDelete) return;
-                
                 try {
                     await db.collection('cylinders').doc(cylinderId).delete();
                     this.showNotification(`✅ Баллон ${cylinder.number} удален навсегда`);
                     this.loadData();
-                } catch (error) {
-                    console.error('Ошибка удаления:', error);
-                    this.showNotification('❌ Ошибка удаления', 'error');
-                }
+                } catch(e) { this.showNotification('Ошибка удаления', 'error'); }
             },
 
             updateStats() {
-                // Основные показатели
-                const totalCylinders = this.cylinders.length + this.archivedCylinders.length;
-                const fullCylinders = this.cylinders.filter(c => c.status === 'Полный').length;
-                const emptyCylinders = this.cylinders.filter(c => c.status === 'Пустой').length;
-                const expired = this.cylinders.filter(c => c.nextInspectionDate && new Date(c.nextInspectionDate) < new Date()).length;
-                
-                document.getElementById('totalCylinders').textContent = totalCylinders;
-                document.getElementById('fullCylinders').textContent = fullCylinders;
-                document.getElementById('emptyCylinders').textContent = emptyCylinders;
-                document.getElementById('expiredCylinders').textContent = expired;
+                document.getElementById('totalCylinders').textContent = this.cylinders.length + this.archivedCylinders.length;
+                document.getElementById('fullCylinders').textContent = this.cylinders.filter(c => c.status === 'Полный').length;
+                document.getElementById('emptyCylinders').textContent = this.cylinders.filter(c => c.status === 'Пустой').length;
                 document.getElementById('totalStorage').textContent = this.storage.length;
                 document.getElementById('totalCylindersBadge').textContent = this.cylinders.length;
                 document.getElementById('archivedCount').textContent = this.archivedCylinders.length;
-                
-                // Статистика по причинам списания
+                const expired = this.cylinders.filter(c => c.nextInspectionDate && new Date(c.nextInspectionDate) < new Date()).length;
+                document.getElementById('expiredCylinders').textContent = expired;
                 const writtenOff = this.archivedCylinders.filter(c => c.archiveReason === 'Списание').length;
                 const exchanged = this.archivedCylinders.filter(c => c.archiveReason === 'Обмен').length;
                 const defect = this.archivedCylinders.filter(c => c.archiveReason === 'Брак').length;
                 const utilized = this.archivedCylinders.filter(c => c.archiveReason === 'Утилизация').length;
-                
                 document.getElementById('writtenOffCount').textContent = writtenOff;
                 document.getElementById('exchangedCount').textContent = exchanged;
                 document.getElementById('defectCount').textContent = defect;
@@ -1507,83 +1321,44 @@
 
             async showUsersModal() {
                 if (this.userRole !== 'admin') return;
-                
                 const users = (await db.collection('users').get()).docs.map(d => ({ id: d.id, ...d.data() }));
                 const admins = users.filter(u => u.role === 'admin');
                 const regularUsers = users.filter(u => u.role !== 'admin');
-                
                 const list = document.getElementById('usersList');
                 list.innerHTML = `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #2c3e50; border-bottom: 2px solid #e74c3c; padding-bottom: 5px;">
-                            👑 Администраторы (${admins.length})
-                        </h3>
-                        ${admins.map(u => `
-                            <div style="padding:10px; border-left: 4px solid #e74c3c; margin-bottom: 10px; background: #fff5f5; border-radius: 6px;">
-                                <strong>${this.escapeHtml(u.email)}</strong><br>
-                                Имя: ${this.escapeHtml(u.name) || 'не указано'}<br>
-                                Статус: ${this.getStatusText(u.status)}<br>
-                                ${u.id !== this.currentUser.uid ? 
-                                    `<button class="btn btn-small btn-warning" onclick="App.removeAdmin('${u.id}')">👑 Снять админа</button>` : 
-                                    `<span style="color: #27ae60;">✅ Это вы (текущий администратор)</span>`}
-                            </div>
-                        `).join('')}
-                    </div>
-                    
-                    <div>
-                        <h3 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
-                            👥 Пользователи (${regularUsers.length})
-                        </h3>
-                        ${regularUsers.map(u => `
-                            <div style="padding:10px; border-left: 4px solid ${this.getStatusColor(u.status)}; margin-bottom: 10px; border-radius: 6px;">
-                                <strong>${this.escapeHtml(u.email)}</strong><br>
-                                Имя: ${this.escapeHtml(u.name) || 'не указано'}<br>
-                                Статус: ${this.getStatusText(u.status)}<br>
-                                <div style="display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap;">
-                                    ${u.status === 'pending' ? 
-                                        `<button class="btn btn-small btn-success" onclick="App.approveUser('${u.id}')">✅ Подтвердить</button>
-                                         <button class="btn btn-small btn-danger" onclick="App.rejectUser('${u.id}')">❌ Отклонить</button>` : ''}
-                                    ${u.status === 'active' ? 
-                                        `<button class="btn btn-small btn-danger" onclick="App.banUser('${u.id}')">⛔ Заблокировать</button>` : ''}
-                                    ${u.status === 'banned' ? 
-                                        `<button class="btn btn-small btn-success" onclick="App.approveUser('${u.id}')">✅ Разблокировать</button>` : ''}
-                                    ${u.role !== 'admin' ? 
-                                        `<button class="btn btn-small btn-info" onclick="App.makeAdmin('${u.id}')">👑 Сделать админом</button>` : ''}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
+                    <div style="margin-bottom:20px;"><h3 style="color:#2c3e50;">👑 Администраторы (${admins.length})</h3>
+                    ${admins.map(u => `<div style="padding:10px; border-left:4px solid #e74c3c; margin-bottom:10px; background:#fff5f5;">
+                        <strong>${this.escapeHtml(u.email)}</strong><br>Имя: ${this.escapeHtml(u.name) || '-'}<br>Статус: ${this.getStatusText(u.status)}<br>
+                        ${u.id !== this.currentUser.uid ? `<button class="btn btn-small btn-warning" onclick="App.removeAdmin('${u.id}')">👑 Снять админа</button>` : '<span style="color:#27ae60;">✅ Это вы</span>'}
+                    </div>`).join('')}</div>
+                    <div><h3 style="color:#2c3e50;">👥 Пользователи (${regularUsers.length})</h3>
+                    ${regularUsers.map(u => `<div style="padding:10px; border-left:4px solid ${this.getStatusColor(u.status)}; margin-bottom:10px;">
+                        <strong>${this.escapeHtml(u.email)}</strong><br>Имя: ${this.escapeHtml(u.name) || '-'}<br>Статус: ${this.getStatusText(u.status)}<br>
+                        <div style="display:flex; gap:5px; flex-wrap:wrap; margin-top:8px;">
+                            ${u.status === 'pending' ? `<button class="btn btn-small btn-success" onclick="App.approveUser('${u.id}')">✅ Подтвердить</button>
+                             <button class="btn btn-small btn-danger" onclick="App.rejectUser('${u.id}')">❌ Отклонить</button>` : ''}
+                            ${u.status === 'active' ? `<button class="btn btn-small btn-danger" onclick="App.banUser('${u.id}')">⛔ Заблокировать</button>` : ''}
+                            ${u.status === 'banned' ? `<button class="btn btn-small btn-success" onclick="App.approveUser('${u.id}')">✅ Разблокировать</button>` : ''}
+                            ${u.role !== 'admin' ? `<button class="btn btn-small btn-info" onclick="App.makeAdmin('${u.id}')">👑 Сделать админом</button>` : ''}
+                        </div>
+                    </div>`).join('')}</div>`;
                 this.showModal('usersModal');
             },
 
-            getStatusText(status) {
-                switch(status) {
-                    case 'pending': return '⏳ Ожидает подтверждения';
-                    case 'active': return '✅ Активен';
-                    case 'rejected': return '❌ Отклонен';
-                    case 'banned': return '⛔ Заблокирован';
-                    default: return '❓ Неизвестно';
-                }
+            getStatusText(s) {
+                const statuses = { pending: '⏳ Ожидает', active: '✅ Активен', rejected: '❌ Отклонен', banned: '⛔ Заблокирован' };
+                return statuses[s] || '❓ Неизвестно';
             },
 
-            getStatusColor(status) {
-                switch(status) {
-                    case 'pending': return '#f39c12';
-                    case 'active': return '#27ae60';
-                    case 'rejected': return '#e74c3c';
-                    case 'banned': return '#7f8c8d';
-                    default: return '#3498db';
-                }
+            getStatusColor(s) {
+                const colors = { pending: '#f39c12', active: '#27ae60', rejected: '#e74c3c', banned: '#7f8c8d' };
+                return colors[s] || '#3498db';
             },
 
             async removeAdmin(uid) {
                 const admins = (await db.collection('users').where('role', '==', 'admin').get()).size;
-                if (admins <= 1) {
-                    this.showNotification('❌ Нельзя снять права с последнего администратора!', 'error');
-                    return;
-                }
-                if (!confirm('Снять права администратора с этого пользователя?')) return;
+                if (admins <= 1) return this.showNotification('❌ Нельзя снять права с последнего администратора!', 'error');
+                if (!confirm('Снять права администратора?')) return;
                 await db.collection('users').doc(uid).update({ role: 'user' });
                 this.showNotification('👑 Права администратора сняты');
                 this.showUsersModal();
@@ -1591,13 +1366,10 @@
 
             async makeAdmin(uid) {
                 const user = await db.collection('users').doc(uid).get();
-                if (user.data()?.role === 'admin') {
-                    this.showNotification('❌ Этот пользователь уже администратор!', 'error');
-                    return;
-                }
-                if (!confirm('Назначить этого пользователя администратором?')) return;
+                if (user.data()?.role === 'admin') return this.showNotification('❌ Уже администратор!', 'error');
+                if (!confirm('Назначить администратором?')) return;
                 await db.collection('users').doc(uid).update({ role: 'admin' });
-                this.showNotification('👑 Пользователь назначен администратором');
+                this.showNotification('👑 Назначен администратором');
                 this.showUsersModal();
             },
 
@@ -1612,12 +1384,7 @@
             },
 
             async createBackup() {
-                const backup = {
-                    timestamp: new Date().toISOString(),
-                    storages: this.storage,
-                    cylinders: this.cylinders,
-                    archived: this.archivedCylinders
-                };
+                const backup = { timestamp: new Date().toISOString(), storages: this.storage, cylinders: this.cylinders, archived: this.archivedCylinders };
                 const dataStr = JSON.stringify(backup, null, 2);
                 const blob = new Blob([dataStr], {type: 'application/json'});
                 const url = URL.createObjectURL(blob);
