@@ -72,7 +72,14 @@
         .header h1 { font-size: 1.3rem; color: white; }
         .user-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         
-        .container { display: flex; flex-direction: column; min-height: calc(100vh - 65px); }
+        .container { 
+            display: flex; 
+            flex-direction: column; 
+            min-height: calc(100vh - 65px);
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
         
         .sidebar { 
             width: 100%; 
@@ -89,7 +96,12 @@
         .stat-value { font-weight: bold; color: #2c3e50; }
         .stat-divider { border-top: 1px solid #ddd; margin: 6px 0; padding-top: 4px; }
         
-        .main-content { flex: 1; padding: 15px; overflow: auto; }
+        .main-content { 
+            flex: 1; 
+            padding: 15px; 
+            overflow: auto;
+            max-width: 100%;
+        }
         .workspace-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         .workspace-header h2 { font-size: 1.2rem; color: #2c3e50; }
         
@@ -98,6 +110,7 @@
             grid-template-columns: 1fr;
             gap: 15px; 
             align-items: start;
+            max-width: 100%;
         }
         
         .storage-item { 
@@ -229,10 +242,27 @@
             display: none;
         }
         
-        /* Десктопная версия - увеличенные размеры */
         @media (min-width: 1024px) {
-            .sidebar { width: 280px; border-right: 1px solid #ddd; border-bottom: none; }
-            .storage-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+            .container { 
+                flex-direction: row;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .sidebar { 
+                width: 280px; 
+                border-right: 1px solid #ddd; 
+                border-bottom: none;
+                flex-shrink: 0;
+            }
+            .main-content {
+                padding: 20px 25px;
+                max-width: calc(100% - 280px);
+            }
+            .storage-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                max-width: 100%;
+                margin: 0 auto;
+            }
             .slots-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
             .slot { min-height: 80px; }
             .slot:not(.empty) { min-height: 140px; }
@@ -249,13 +279,25 @@
             .stat-item { font-size: 14px; }
         }
         
+        @media (min-width: 1400px) {
+            .container { max-width: 1500px; }
+            .storage-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+                max-width: 1300px;
+                margin: 0 auto;
+            }
+            .main-content {
+                padding: 25px 30px;
+            }
+        }
+        
         @media (min-width: 768px) and (max-width: 1023px) {
             .container { flex-direction: row; }
             .sidebar { width: 260px; border-right: 1px solid #ddd; border-bottom: none; }
-            .storage-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+            .storage-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
             .slots-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
             .slot { min-height: 70px; }
-            .slot:not(.empty) { min-height: 120px; }
+            .slot:not(.empty) { min-height: 110px; }
         }
         
         @media (max-width: 767px) {
@@ -318,14 +360,16 @@
                 cursor: pointer;
                 color: #666;
             }
+            .container { max-width: 100%; }
+            .storage-grid { grid-template-columns: 1fr; }
+            .slots-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+            .slot { min-height: 55px; }
+            .slot:not(.empty) { min-height: 95px; }
             .header h1 { font-size: 1rem; }
             .workspace-header h2 { font-size: 1rem; }
             .modal-content { padding: 15px; }
             .modal h2 { font-size: 1.1rem; }
             .storage-item { padding: 10px; }
-            .slot { min-height: 55px; }
-            .slot:not(.empty) { min-height: 95px; }
-            .slots-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
             .cylinder-number { font-size: 10px; }
             .cylinder-status { font-size: 8px; }
             .cylinder-gas { font-size: 9px; }
@@ -1392,7 +1436,6 @@
             async toggleCylinderStatus(id) {
                 const cyl = this.cylinders.find(c => c.id === id);
                 if (!cyl) return;
-                // Правильный порядок: Полный → Установлен → Пустой → Полный
                 const statuses = ['Полный', 'Установлен', 'Пустой'];
                 const currentIndex = statuses.indexOf(cyl.status);
                 const newStatus = statuses[(currentIndex + 1) % statuses.length];
