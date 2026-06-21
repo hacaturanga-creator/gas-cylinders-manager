@@ -28,10 +28,10 @@
             padding: 20px;
         }
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid white;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
@@ -42,174 +42,181 @@
         }
         
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; border-radius: 12px; padding: 20px; width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal h2 { margin-bottom: 15px; color: #2c3e50; font-size: 1.2rem; }
+        .modal-content { background: white; border-radius: 12px; padding: 25px; width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal h2 { margin-bottom: 18px; color: #2c3e50; font-size: 1.4rem; }
         
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; font-size: 13px; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; color: #333; }
-        .form-group textarea { min-height: 70px; resize: vertical; }
-        .form-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-        .form-row .form-group { flex: 1; min-width: 120px; margin-bottom: 0; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #333; font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; background: white; color: #333; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-row { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+        .form-row .form-group { flex: 1; min-width: 140px; margin-bottom: 0; }
         
-        .btn { padding: 8px 14px; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; font-weight: 500; display: inline-block; text-align: center; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; font-weight: 500; display: inline-block; text-align: center; }
         .btn-primary { background: #3498db; color: white; }
         .btn-primary:hover { background: #2980b9; }
         .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
         .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #229954; }
         .btn-warning { background: #f39c12; color: white; }
+        .btn-warning:hover { background: #e67e22; }
         .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
         .btn-info { background: #17a2b8; color: white; }
-        .btn-block { width: 100%; margin-bottom: 8px; }
-        .btn-small { padding: 4px 8px; font-size: 0.7rem; }
+        .btn-info:hover { background: #138496; }
+        .btn-block { width: 100%; margin-bottom: 10px; }
+        .btn-small { padding: 5px 10px; font-size: 0.8rem; }
         
-        .header { background: #2c3e50; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .header h1 { font-size: 1rem; color: white; }
-        .user-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .header { background: #2c3e50; color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { font-size: 1.3rem; color: white; }
+        .user-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         
-        .container { display: flex; flex-direction: column; min-height: calc(100vh - 55px); }
+        .container { display: flex; flex-direction: column; min-height: calc(100vh - 65px); }
         
         .sidebar { 
             width: 100%; 
             background: white; 
-            padding: 10px; 
+            padding: 15px; 
             border-bottom: 1px solid #ddd;
         }
         
-        .sidebar-section { margin-bottom: 12px; }
-        .sidebar-section h3 { margin-bottom: 8px; color: #2c3e50; font-size: 13px; border-bottom: 2px solid #3498db; padding-bottom: 4px; }
+        .sidebar-section { margin-bottom: 18px; }
+        .sidebar-section h3 { margin-bottom: 10px; color: #2c3e50; font-size: 15px; border-bottom: 2px solid #3498db; padding-bottom: 6px; }
         
-        .stats { background: #f8f9fa; padding: 8px; border-radius: 8px; }
-        .stat-item { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 11px; color: #333; }
+        .stats { background: #f8f9fa; padding: 12px; border-radius: 8px; }
+        .stat-item { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #333; }
         .stat-value { font-weight: bold; color: #2c3e50; }
-        .stat-divider { border-top: 1px solid #ddd; margin: 5px 0; padding-top: 3px; }
+        .stat-divider { border-top: 1px solid #ddd; margin: 6px 0; padding-top: 4px; }
         
-        .main-content { flex: 1; padding: 10px; overflow: auto; }
-        .workspace-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
-        .workspace-header h2 { font-size: 1rem; color: #2c3e50; }
+        .main-content { flex: 1; padding: 15px; overflow: auto; }
+        .workspace-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .workspace-header h2 { font-size: 1.2rem; color: #2c3e50; }
         
         .storage-grid { 
             display: grid; 
             grid-template-columns: 1fr;
-            gap: 10px; 
+            gap: 15px; 
             align-items: start;
         }
         
         .storage-item { 
             background: white; 
             border: 2px solid #3498db; 
-            border-radius: 8px; 
-            padding: 8px;
+            border-radius: 10px; 
+            padding: 15px;
             overflow: hidden;
         }
-        .storage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 5px; }
-        .storage-header h4 { font-size: 13px; color: #2c3e50; word-break: break-word; }
+        .storage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+        .storage-header h4 { font-size: 16px; color: #2c3e50; word-break: break-word; }
         
         .slots-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 5px;
-            margin-top: 6px;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
         }
         
         .slot { 
-            min-height: 50px; 
-            border: 1px solid #e0e0e0; 
-            border-radius: 6px; 
-            padding: 4px; 
+            min-height: 70px; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 8px; 
+            padding: 8px; 
             background: #f8f9fa; 
             cursor: pointer;
             overflow: hidden;
         }
         .slot.empty { 
-            height: 50px; 
+            height: 70px; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            border: 1px dashed #bdc3c7; 
+            border: 2px dashed #bdc3c7; 
         }
-        .slot.empty::after { content: '+'; font-size: 18px; color: #95a5a6; }
-        .slot:not(.empty) { min-height: 85px; padding: 4px; }
+        .slot.empty::after { content: '+'; font-size: 22px; color: #95a5a6; }
+        .slot:not(.empty) { min-height: 120px; padding: 8px; }
         
         .cylinder { 
-            padding: 4px;
-            font-size: 9px;
+            padding: 8px;
+            font-size: 11px;
             word-break: break-word;
         }
-        .cylinder.oxygen { border-left-color: #e74c3c; border-left-width: 3px; border-left-style: solid; }
-        .cylinder.nitrogen { border-left-color: #3498db; border-left-width: 3px; border-left-style: solid; }
-        .cylinder.argon { border-left-color: #9b59b6; border-left-width: 3px; border-left-style: solid; }
-        .cylinder.helium { border-left-color: #2ecc71; border-left-width: 3px; border-left-style: solid; }
+        .cylinder.oxygen { border-left-color: #e74c3c; border-left-width: 4px; border-left-style: solid; }
+        .cylinder.nitrogen { border-left-color: #3498db; border-left-width: 4px; border-left-style: solid; }
+        .cylinder.argon { border-left-color: #9b59b6; border-left-width: 4px; border-left-style: solid; }
+        .cylinder.helium { border-left-color: #2ecc71; border-left-width: 4px; border-left-style: solid; }
         
-        .cylinder-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; flex-wrap: wrap; gap: 3px; }
-        .cylinder-number { font-weight: bold; font-size: 9px; }
-        .cylinder-status { font-size: 7px; padding: 1px 3px; border-radius: 6px; display: inline-block; }
+        .cylinder-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-wrap: wrap; gap: 4px; }
+        .cylinder-number { font-weight: bold; font-size: 12px; }
+        .cylinder-status { font-size: 9px; padding: 2px 6px; border-radius: 10px; display: inline-block; }
         .cylinder-status.full { background: #d5f4e6; color: #27ae60; }
         .cylinder-status.empty { background: #fadbd8; color: #e74c3c; }
         .cylinder-status.installed { background: #c8e6f9; color: #1565c0; }
-        .cylinder-gas { font-size: 8px; color: #666; margin-bottom: 2px; }
-        .cylinder-details { font-size: 7px; color: #888; }
-        .cylinder-pressure { margin-top: 3px; padding-top: 2px; border-top: 1px solid #eee; }
-        .cylinder-pressure label { font-size: 6px; color: #666; display: block; margin-bottom: 2px; }
-        .cylinder-pressure input { width: 100%; padding: 2px 3px; font-size: 7px; border: 1px solid #ddd; border-radius: 3px; }
-        .pressure-time { font-size: 6px; color: #999; margin-top: 2px; text-align: center; }
-        .cylinder-actions { display: flex; gap: 2px; margin-top: 3px; }
-        .cylinder-actions button { flex: 1; padding: 2px; font-size: 7px; background: #eee; border: none; border-radius: 3px; cursor: pointer; }
+        .cylinder-gas { font-size: 10px; color: #666; margin-bottom: 3px; }
+        .cylinder-details { font-size: 9px; color: #888; }
+        .cylinder-pressure { margin-top: 4px; padding-top: 3px; border-top: 1px solid #eee; }
+        .cylinder-pressure label { font-size: 8px; color: #666; display: block; margin-bottom: 2px; }
+        .cylinder-pressure input { width: 100%; padding: 4px 6px; font-size: 9px; border: 1px solid #ddd; border-radius: 4px; }
+        .pressure-time { font-size: 8px; color: #999; margin-top: 3px; text-align: center; }
+        .cylinder-actions { display: flex; gap: 4px; margin-top: 5px; }
+        .cylinder-actions button { flex: 1; padding: 3px 6px; font-size: 9px; background: #eee; border: none; border-radius: 4px; cursor: pointer; }
+        .cylinder-actions button:hover { background: #ddd; }
         
-        .free-cylinders { background: white; border: 2px solid #f39c12; border-radius: 8px; padding: 8px; margin-top: 10px; }
-        .free-cylinders h3 { font-size: 12px; margin-bottom: 6px; }
-        .free-cylinders-grid { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
-        .free-cylinder { min-width: 110px; max-width: 160px; background: white; padding: 5px; border-radius: 6px; border-left: 3px solid; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: grab; flex: 1; font-size: 9px; word-break: break-word; }
+        .free-cylinders { background: white; border: 2px solid #f39c12; border-radius: 10px; padding: 15px; margin-top: 20px; }
+        .free-cylinders h3 { font-size: 15px; margin-bottom: 10px; }
+        .free-cylinders-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .free-cylinder { min-width: 150px; max-width: 200px; background: white; padding: 10px; border-radius: 8px; border-left: 4px solid; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: grab; flex: 1; font-size: 11px; word-break: break-word; }
         
-        .archive-section { background: white; border: 2px solid #95a5a6; border-radius: 8px; padding: 8px; margin-top: 10px; }
+        .archive-section { background: white; border: 2px solid #95a5a6; border-radius: 10px; padding: 15px; margin-top: 20px; }
         .archive-toggle { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .archive-toggle h3 { font-size: 12px; }
+        .archive-toggle h3 { font-size: 15px; }
         .archive-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-        .archive-content.expanded { max-height: 300px; overflow-y: auto; margin-top: 8px; }
-        .archive-table { width: 100%; border-collapse: collapse; font-size: 9px; }
-        .archive-table th, .archive-table td { border: 1px solid #ddd; padding: 4px; text-align: left; word-break: break-word; }
+        .archive-content.expanded { max-height: 400px; overflow-y: auto; margin-top: 12px; }
+        .archive-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .archive-table th, .archive-table td { border: 1px solid #ddd; padding: 8px; text-align: left; word-break: break-word; }
         .archive-table th { background: #f8f9fa; }
         
-        .realtime-indicator { position: fixed; bottom: 10px; right: 10px; background: #2ecc71; color: white; padding: 4px 8px; border-radius: 20px; font-size: 9px; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 999; }
+        .realtime-indicator { position: fixed; bottom: 15px; right: 15px; background: #2ecc71; color: white; padding: 6px 12px; border-radius: 20px; font-size: 11px; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 999; }
         .realtime-indicator.offline { background: #e74c3c; }
-        .realtime-indicator .pulse { width: 6px; height: 6px; border-radius: 50%; background: white; animation: pulse 2s infinite; }
+        .realtime-indicator .pulse { width: 8px; height: 8px; border-radius: 50%; background: white; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         
-        .error-message { background: #fadbd8; color: #e74c3c; padding: 6px; border-radius: 6px; margin-top: 6px; font-size: 11px; }
-        .notification { position: fixed; top: 20px; right: 20px; background: #2ecc71; color: white; padding: 10px 15px; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 12px; max-width: 90%; word-break: break-word; }
+        .error-message { background: #fadbd8; color: #e74c3c; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; }
+        .notification { position: fixed; top: 20px; right: 20px; background: #2ecc71; color: white; padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 13px; max-width: 90%; word-break: break-word; }
         .notification.error { background: #e74c3c; }
         .notification.warning { background: #f39c12; }
         
-        .badge { background: #3498db; color: white; padding: 2px 5px; border-radius: 10px; font-size: 9px; display: inline-block; }
+        .badge { background: #3498db; color: white; padding: 3px 8px; border-radius: 12px; font-size: 11px; display: inline-block; }
         .admin-only { display: none !important; }
         .admin-only.show { display: inline-block !important; }
         
         .user-menu { position: relative; display: inline-block; }
-        .user-menu-btn { display: flex; align-items: center; gap: 5px; background: #34495e; padding: 5px 8px; border-radius: 20px; cursor: pointer; transition: background 0.3s; color: white; font-size: 11px; }
-        .user-menu-dropdown { position: absolute; top: 100%; right: 0; background: white; min-width: 160px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 1000; margin-top: 5px; display: none; }
+        .user-menu-btn { display: flex; align-items: center; gap: 6px; background: #34495e; padding: 8px 12px; border-radius: 20px; cursor: pointer; transition: background 0.3s; color: white; font-size: 13px; }
+        .user-menu-btn:hover { background: #2c3e50; }
+        .user-menu-dropdown { position: absolute; top: 100%; right: 0; background: white; min-width: 180px; border-radius: 8px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 1000; margin-top: 5px; display: none; }
         .user-menu-dropdown.show { display: block; }
-        .user-menu-item { padding: 8px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid #eee; color: #333; font-size: 12px; }
+        .user-menu-item { padding: 10px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid #eee; color: #333; font-size: 14px; }
         .user-menu-item:hover { background: #f8f9fa; }
-        .user-menu-icon { width: 20px; text-align: center; }
+        .user-menu-icon { width: 24px; text-align: center; }
         
-        .drop-zone { border: 2px dashed #3498db; border-radius: 8px; padding: 10px; text-align: center; background: #f8f9fa; margin-bottom: 10px; font-size: 11px; color: #666; }
-        .empty-state { text-align: center; padding: 20px; background: white; border-radius: 12px; margin-bottom: 10px; }
-        .empty-state h3 { font-size: 14px; margin-bottom: 6px; }
-        .empty-state p { font-size: 11px; }
+        .drop-zone { border: 2px dashed #3498db; border-radius: 10px; padding: 15px; text-align: center; background: #f8f9fa; margin-bottom: 15px; font-size: 13px; color: #666; }
+        .empty-state { text-align: center; padding: 40px; background: white; border-radius: 12px; margin-bottom: 15px; }
+        .empty-state h3 { font-size: 18px; margin-bottom: 10px; }
+        .empty-state p { font-size: 14px; }
         
-        .status-badge { display: inline-block; padding: 2px 5px; border-radius: 8px; font-size: 9px; margin: 0 2px; }
+        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin: 0 2px; }
         .status-full { background: #d5f4e6; color: #27ae60; }
         .status-empty { background: #fadbd8; color: #e74c3c; }
         .status-installed { background: #c8e6f9; color: #1565c0; }
         
-        .instruction-section { margin-bottom: 12px; }
-        .instruction-title { font-weight: bold; color: #2c3e50; margin-bottom: 6px; font-size: 13px; }
-        .instruction-list { padding-left: 16px; margin-bottom: 10px; }
-        .instruction-list li { margin-bottom: 5px; line-height: 1.3; font-size: 12px; }
-        .instruction-note { background: #e8f4fd; padding: 8px; border-radius: 8px; margin-top: 10px; border-left: 3px solid #3498db; font-size: 11px; }
+        .instruction-section { margin-bottom: 15px; }
+        .instruction-title { font-weight: bold; color: #2c3e50; margin-bottom: 8px; font-size: 15px; }
+        .instruction-list { padding-left: 20px; margin-bottom: 12px; }
+        .instruction-list li { margin-bottom: 6px; line-height: 1.4; font-size: 14px; }
+        .instruction-note { background: #e8f4fd; padding: 12px; border-radius: 8px; margin-top: 12px; border-left: 4px solid #3498db; font-size: 13px; }
         
         .drag-over { background: #d5f4e6 !important; border-color: #27ae60 !important; }
-        .password-strength { height: 3px; background: #eee; border-radius: 2px; margin-top: 5px; overflow: hidden; }
+        .password-strength { height: 4px; background: #eee; border-radius: 2px; margin-top: 5px; overflow: hidden; }
         .password-strength-bar { height: 100%; width: 0%; transition: width 0.3s; }
         .password-strength.weak .password-strength-bar { width: 33%; background: #e74c3c; }
         .password-strength.medium .password-strength-bar { width: 66%; background: #f39c12; }
@@ -222,21 +229,33 @@
             display: none;
         }
         
-        @media (min-width: 768px) {
+        /* Десктопная версия - увеличенные размеры */
+        @media (min-width: 1024px) {
+            .sidebar { width: 280px; border-right: 1px solid #ddd; border-bottom: none; }
+            .storage-grid { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+            .slots-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+            .slot { min-height: 80px; }
+            .slot:not(.empty) { min-height: 140px; }
+            .header h1 { font-size: 1.5rem; }
+            .workspace-header h2 { font-size: 1.4rem; }
+            .cylinder { font-size: 12px; }
+            .cylinder-number { font-size: 13px; }
+            .cylinder-status { font-size: 10px; }
+            .cylinder-gas { font-size: 11px; }
+            .cylinder-details { font-size: 10px; }
+            .free-cylinder { font-size: 12px; min-width: 160px; }
+            .storage-item { padding: 18px; }
+            .btn { font-size: 1rem; padding: 12px 20px; }
+            .stat-item { font-size: 14px; }
+        }
+        
+        @media (min-width: 768px) and (max-width: 1023px) {
             .container { flex-direction: row; }
             .sidebar { width: 260px; border-right: 1px solid #ddd; border-bottom: none; }
             .storage-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
             .slots-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
-            .slot { min-height: 60px; }
-            .slot:not(.empty) { min-height: 100px; }
-            .header h1 { font-size: 1.2rem; }
-            .workspace-header h2 { font-size: 1.2rem; }
-            .cylinder { font-size: 10px; }
-            .cylinder-number { font-size: 10px; }
-            .cylinder-status { font-size: 8px; }
-            .cylinder-gas { font-size: 9px; }
-            .cylinder-details { font-size: 8px; }
-            .free-cylinder { font-size: 10px; }
+            .slot { min-height: 70px; }
+            .slot:not(.empty) { min-height: 120px; }
         }
         
         @media (max-width: 767px) {
@@ -249,18 +268,18 @@
                 background: #3498db;
                 color: white;
                 border: none;
-                width: 45px;
-                height: 45px;
+                width: 50px;
+                height: 50px;
                 border-radius: 50%;
-                font-size: 22px;
+                font-size: 24px;
                 cursor: pointer;
                 box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             }
             .sidebar {
                 position: fixed;
                 top: 0;
-                left: -280px;
-                width: 280px;
+                left: -300px;
+                width: 300px;
                 height: 100%;
                 z-index: 1001;
                 overflow-y: auto;
@@ -289,16 +308,31 @@
             }
             .close-menu-btn {
                 text-align: right;
-                padding: 8px;
+                padding: 10px;
                 border-bottom: 1px solid #eee;
             }
             .close-menu-btn button {
                 background: none;
                 border: none;
-                font-size: 20px;
+                font-size: 22px;
                 cursor: pointer;
                 color: #666;
             }
+            .header h1 { font-size: 1rem; }
+            .workspace-header h2 { font-size: 1rem; }
+            .modal-content { padding: 15px; }
+            .modal h2 { font-size: 1.1rem; }
+            .storage-item { padding: 10px; }
+            .slot { min-height: 55px; }
+            .slot:not(.empty) { min-height: 95px; }
+            .slots-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+            .cylinder-number { font-size: 10px; }
+            .cylinder-status { font-size: 8px; }
+            .cylinder-gas { font-size: 9px; }
+            .cylinder-details { font-size: 8px; }
+            .free-cylinder { font-size: 10px; min-width: 120px; max-width: 160px; }
+            .btn { font-size: 0.8rem; padding: 8px 12px; }
+            .stat-item { font-size: 11px; }
         }
     </style>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
@@ -317,23 +351,23 @@
 
     <div id="loginModal" class="modal">
         <div class="modal-content" style="max-width: 450px;">
-            <div style="text-align: center; margin-bottom: 15px;">
-                <h2 style="margin-bottom: 8px;">🔐 Система управления баллонами</h2>
-                <p style="color: #666; font-size: 12px;">Пожалуйста, войдите или зарегистрируйтесь</p>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="margin-bottom: 10px;">🔐 Система управления баллонами</h2>
+                <p style="color: #666; font-size: 14px;">Пожалуйста, войдите или зарегистрируйтесь</p>
             </div>
             <div class="form-group">
                 <label>Email:</label>
-                <input type="email" id="loginEmail" placeholder="user@company.com">
+                <input type="email" id="loginEmail" placeholder="user@ammoni.ru">
             </div>
             <div class="form-group">
                 <label>Пароль:</label>
                 <input type="password" id="loginPassword" placeholder="••••••••">
             </div>
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
                 <button id="loginBtn" class="btn btn-primary">Войти</button>
                 <button id="registerBtn" class="btn btn-secondary">Зарегистрироваться</button>
             </div>
-            <div id="firstAdminContainer" style="margin-top: 10px; text-align: center;"></div>
+            <div id="firstAdminContainer" style="margin-top: 12px; text-align: center;"></div>
             <div id="loginError" class="error-message hidden"></div>
         </div>
     </div>
@@ -341,10 +375,10 @@
     <div id="pendingApprovalModal" class="modal hidden">
         <div class="modal-content" style="max-width: 500px; text-align: center;">
             <div style="font-size: 40px; color: #f39c12;">⏳</div>
-            <h2 style="margin: 10px 0 6px 0;">Ожидание подтверждения</h2>
-            <div style="padding: 12px; background: #fef9e7; border-radius: 8px; margin-bottom: 12px;">
+            <h2 style="margin: 12px 0 8px 0;">Ожидание подтверждения</h2>
+            <div style="padding: 15px; background: #fef9e7; border-radius: 8px; margin-bottom: 15px;">
                 <p style="color: #7d6608;"><strong id="pendingUserEmail"></strong></p>
-                <p style="color: #666; font-size: 12px;">Ваша регистрация отправлена на подтверждение администратору.</p>
+                <p style="color: #666; font-size: 13px;">Ваша регистрация отправлена на подтверждение администратору.</p>
             </div>
             <button id="checkApprovalBtn" class="btn btn-info">🔄 Проверить статус</button>
             <button id="logoutPendingBtn" class="btn btn-secondary">Выйти</button>
@@ -369,9 +403,9 @@
         <div class="modal-content" style="max-width: 450px;">
             <h2>👤 Мой профиль</h2>
             <div class="form-group"><label>Имя:</label><input type="text" id="profileName"></div>
-            <div style="margin: 8px 0;"><h4 id="profileEmail" style="font-size: 13px;"></h4>
-            <span id="profileRole" style="display: inline-block; padding: 2px 8px; border-radius: 10px; background: #3498db; color: white; font-size: 10px;"></span> 
-            <span id="profileStatus" style="display: inline-block; padding: 2px 8px; border-radius: 10px; background: #95a5a6; color: white; font-size: 10px;"></span></div>
+            <div style="margin: 10px 0;"><h4 id="profileEmail" style="font-size: 15px;"></h4>
+            <span id="profileRole" style="display: inline-block; padding: 2px 10px; border-radius: 10px; background: #3498db; color: white; font-size: 12px;"></span> 
+            <span id="profileStatus" style="display: inline-block; padding: 2px 10px; border-radius: 10px; background: #95a5a6; color: white; font-size: 12px;"></span></div>
             <button id="saveProfileBtn" class="btn btn-primary">Сохранить</button>
             <button id="changePasswordProfileBtn" class="btn btn-warning">Сменить пароль</button>
             <div id="profileError" class="error-message hidden"></div>
@@ -394,7 +428,7 @@
             <div class="form-row"><div class="form-group"><label>Вместимость (л):</label><input type="number" id="capacity" value="40"></div>
             <div class="form-group"><label>Поставщик:</label><input type="text" id="supplier" value="ООО ГазСнаб"></div></div>
             <div class="form-group"><label>Примечание:</label><textarea id="notes"></textarea></div>
-            <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button id="saveCylinderBtn" class="btn btn-primary" style="flex: 1;">Сохранить</button>
                 <button id="cancelCylinderBtn" class="btn btn-secondary" style="flex: 1;">Отмена</button>
             </div>
@@ -419,7 +453,7 @@
             <div class="form-group"><label>Давление измерено:</label><input type="text" id="viewPressureTime" readonly></div>
             <div class="form-group"><label>Место хранения:</label><input type="text" id="viewStorageLocation" readonly></div>
             <div class="form-group"><label>Примечание:</label><textarea id="viewNotes" readonly rows="2"></textarea></div>
-            <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
                 <button id="editCylinderFromViewBtn" class="btn btn-primary" style="flex: 1;">✏️ Редактировать</button>
                 <button id="closeViewBtn" class="btn btn-secondary" style="flex: 1;">Закрыть</button>
             </div>
@@ -455,19 +489,19 @@
     </div>
 
     <div id="usersModal" class="modal hidden">
-        <div class="modal-content"><h2>👥 Управление пользователями</h2><div id="usersList" style="max-height: 400px; overflow-y: auto;"></div><button onclick="App.hideModal('usersModal')" class="btn btn-secondary" style="margin-top: 10px;">Закрыть</button></div>
+        <div class="modal-content"><h2>👥 Управление пользователями</h2><div id="usersList" style="max-height: 400px; overflow-y: auto;"></div><button onclick="App.hideModal('usersModal')" class="btn btn-secondary" style="margin-top: 12px;">Закрыть</button></div>
     </div>
 
     <div id="instructionModal" class="modal hidden">
         <div class="modal-content" style="max-width: 650px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <h2 style="margin: 0;">📖 Руководство пользователя</h2>
-                <button onclick="App.hideModal('instructionModal')" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+                <button onclick="App.hideModal('instructionModal')" style="background: none; border: none; font-size: 22px; cursor: pointer;">&times;</button>
             </div>
             <div style="max-height: 60vh; overflow-y: auto;">
                 <div class="instruction-section">
                     <div class="instruction-title">🎯 О системе</div>
-                    <p style="font-size: 12px;">Система для учета и управления баллонами с техническими газами.</p>
+                    <p>Система для учета и управления баллонами с техническими газами.</p>
                 </div>
                 <div class="instruction-section">
                     <div class="instruction-title">👥 Роли пользователей</div>
@@ -495,7 +529,7 @@
         <header class="header">
             <h1>🗲 Управление баллонами газов</h1>
             <div class="user-info">
-                <button id="showInstructionBtn" class="btn btn-info btn-small" style="margin-right: 5px;">📖 Помощь</button>
+                <button id="showInstructionBtn" class="btn btn-info btn-small" style="margin-right: 8px;">📖 Помощь</button>
                 <div class="user-menu">
                     <div class="user-menu-btn" id="userMenuBtn">
                         <span id="currentUserInitials">U</span>
@@ -567,7 +601,7 @@
             <main class="main-content">
                 <div class="workspace-header">
                     <h2>Рабочая область <span class="badge" id="totalCylindersBadge">0</span></h2>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button id="refreshBtn" class="btn btn-small">🔄 Обновить</button>
                         <button id="arrangeBtn" class="btn btn-info btn-small">📐 Расположить</button>
                         <button id="showArchiveBtn" class="btn btn-info btn-small">📁 Архив</button>
@@ -599,7 +633,7 @@
                 </div>
 
                 <div id="emptyDatabase" class="empty-state hidden">
-                    <div style="font-size: 36px; margin-bottom: 10px;">🏭</div>
+                    <div style="font-size: 40px; margin-bottom: 15px;">🏭</div>
                     <h3>Нет хранилищ</h3>
                     <p>Добавьте хранилище для размещения баллонов</p>
                     <button id="firstStorageBtn" class="btn btn-primary admin-only">+ Добавить первое хранилище</button>
@@ -1069,11 +1103,11 @@
                             <button class="btn btn-small btn-danger" onclick="App.deleteStorage('${storage.id}')">🗑️</button>
                         </div>
                     </div>
-                    <div style="color:#666; font-size:10px; margin-bottom:5px;">
+                    <div style="color:#666; font-size:12px; margin-bottom:8px;">
                         📦 Вместимость: ${storage.capacity} | Занято: ${cylindersHere.length} | Свободно: ${storage.capacity - cylindersHere.length}<br>
                         ✅ Полных: ${full} | 🔧 Установленных: ${installed} | ❌ Пустых: ${empty} ${expired ? `| ⚠️ ${expired} просроч.` : ''}
                     </div>
-                    <div style="font-size:9px; color:#888; margin-bottom:5px;">📍 ${storage.location || ''}</div>
+                    <div style="font-size:11px; color:#888; margin-bottom:8px;">📍 ${storage.location || ''}</div>
                     <div class="slots-grid" id="slots-${storage.id}"></div>
                 `;
                 const slots = div.querySelector(`#slots-${storage.id}`);
@@ -1298,7 +1332,7 @@
                     div.style.borderLeftColor = color;
                     div.setAttribute('draggable', 'true');
                     div.innerHTML = `<strong>${this.escapeHtml(cyl.number)}</strong><br>${cyl.gasType}<br>${cyl.status}
-                        <div style="margin-top:4px; display:flex; gap:3px;">
+                        <div style="margin-top:6px; display:flex; gap:4px;">
                             <button class="btn btn-small" onclick="event.stopPropagation(); App.viewCylinder('${cyl.id}')">👁️</button>
                             <button class="btn btn-small btn-warning" onclick="event.stopPropagation(); App.showEditCylinder('${cyl.id}')">✏️</button>
                             <button class="btn btn-small btn-danger" onclick="event.stopPropagation(); App.archiveCylinder('${cyl.id}')">📦</button>
@@ -1381,9 +1415,9 @@
                 modal.innerHTML = `
                     <div class="modal-content" style="max-width: 450px;">
                         <h2>📦 Перемещение в архив</h2>
-                        <p style="margin-bottom:10px;">Баллон: <strong>${this.escapeHtml(cylinder.number)}</strong> (${cylinder.gasType})</p>
+                        <p style="margin-bottom:12px;">Баллон: <strong>${this.escapeHtml(cylinder.number)}</strong> (${cylinder.gasType})</p>
                         <div class="form-group"><label>Причина:</label>
-                            <select id="archiveReasonSelect" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;">
+                            <select id="archiveReasonSelect" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;">
                                 <option value="">Выберите причину</option>
                                 <option value="Списание">📝 Списание</option>
                                 <option value="Брак">🔧 Брак</option>
@@ -1395,9 +1429,9 @@
                             </select>
                         </div>
                         <div class="form-group"><label>Комментарий:</label>
-                            <textarea id="archiveCommentText" rows="2" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;"></textarea>
+                            <textarea id="archiveCommentText" rows="2" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:6px;"></textarea>
                         </div>
-                        <div style="display:flex; gap:8px; margin-top:12px;">
+                        <div style="display:flex; gap:10px; margin-top:15px;">
                             <button id="confirmArchiveBtn" class="btn btn-danger" style="flex:1;">✅ Переместить</button>
                             <button id="cancelArchiveBtn" class="btn btn-secondary" style="flex:1;">❌ Отмена</button>
                         </div>
@@ -1515,18 +1549,18 @@
                 if (archivedSpan) archivedSpan.textContent = this.archivedCylinders.length;
                 if (!tbody) return;
                 if (this.archivedCylinders.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:12px;">📭 Архив пуст</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:15px;">📭 Архив пуст</td></tr>';
                     return;
                 }
                 tbody.innerHTML = this.archivedCylinders.map(c => `
                     <tr>
-                        <td style="padding:4px;">${this.escapeHtml(c.number)}</td>
-                        <td style="padding:4px;">${c.gasType}</td>
-                        <td style="padding:4px;">${c.archivedAt?.toDate?.().toLocaleString() || ''}</td>
-                        <td style="padding:4px;">${this.getArchiveReasonIcon(c.archiveReason)} ${c.archiveReason || '-'}</td>
-                        <td style="padding:4px;">${c.archivedBy || '-'}</td>
-                        <td style="padding:4px;">
-                            <button class="btn btn-small btn-success" onclick="App.restoreFromArchive('${c.id}')" style="margin-right:3px;">🔄</button>
+                        <td style="padding: 6px;">${this.escapeHtml(c.number)}</td>
+                        <td style="padding: 6px;">${c.gasType}</td>
+                        <td style="padding: 6px;">${c.archivedAt?.toDate?.().toLocaleString() || ''}</td>
+                        <td style="padding: 6px;">${this.getArchiveReasonIcon(c.archiveReason)} ${c.archiveReason || '-'}</td>
+                        <td style="padding: 6px;">${c.archivedBy || '-'}</td>
+                        <td style="padding: 6px;">
+                            <button class="btn btn-small btn-success" onclick="App.restoreFromArchive('${c.id}')" style="margin-right:4px;">🔄</button>
                             ${this.userRole === 'admin' ? `<button class="btn btn-small btn-danger" onclick="App.permanentDelete('${c.id}')">🗑️</button>` : ''}
                         </td>
                     </tr>
@@ -1591,18 +1625,18 @@
                 const regular = users.filter(u => u.role !== 'admin');
                 const list = document.getElementById('usersList');
                 list.innerHTML = `
-                    <div style="margin-bottom:12px;">
+                    <div style="margin-bottom:15px;">
                         <h3>👑 Администраторы (${admins.length})</h3>
-                        ${admins.map(u => `<div style="padding:8px; border-left:4px solid #e74c3c; margin-bottom:8px; background:#fff5f5;">
+                        ${admins.map(u => `<div style="padding:10px; border-left:4px solid #e74c3c; margin-bottom:8px; background:#fff5f5;">
                             <strong>${this.escapeHtml(u.email)}</strong><br>Статус: ${this.getStatusText(u.status)}
-                            ${u.id !== this.currentUser.uid ? `<button class="btn btn-small btn-warning" onclick="App.removeAdmin('${u.id}')" style="margin-top:4px;">👑 Снять админа</button>` : '<span style="color:#27ae60;">✅ Это вы</span>'}
+                            ${u.id !== this.currentUser.uid ? `<button class="btn btn-small btn-warning" onclick="App.removeAdmin('${u.id}')" style="margin-top:5px;">👑 Снять админа</button>` : '<span style="color:#27ae60;">✅ Это вы</span>'}
                         </div>`).join('')}
                     </div>
                     <div>
                         <h3>👥 Пользователи (${regular.length})</h3>
-                        ${regular.map(u => `<div style="padding:8px; border-left:4px solid ${this.getStatusColor(u.status)}; margin-bottom:8px;">
+                        ${regular.map(u => `<div style="padding:10px; border-left:4px solid ${this.getStatusColor(u.status)}; margin-bottom:8px;">
                             <strong>${this.escapeHtml(u.email)}</strong><br>Статус: ${this.getStatusText(u.status)}
-                            <div style="margin-top:4px; display:flex; gap:4px; flex-wrap:wrap;">
+                            <div style="margin-top:5px; display:flex; gap:4px; flex-wrap:wrap;">
                                 ${u.status === 'pending' ? `<button class="btn btn-small btn-success" onclick="App.approveUser('${u.id}')">✅ Подтвердить</button>
                                  <button class="btn btn-small btn-danger" onclick="App.rejectUser('${u.id}')">❌ Отклонить</button>` : ''}
                                 ${u.status === 'active' ? `<button class="btn btn-small btn-danger" onclick="App.banUser('${u.id}')">⛔ Заблокировать</button>` : ''}
